@@ -63,7 +63,7 @@
     "node-red": ">=3.0.0"
   },
   "scripts": {
-    "test": "node --test test/*.test.js",
+    "test": "node --test",
     "lint": "node tools/lint.js",
     "validate": "npm run lint && npm test && npm pack --dry-run",
     "prepublishOnly": "npm run release:check && npm run validate",
