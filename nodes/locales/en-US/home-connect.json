@@ -1,0 +1,10 @@
+{
+  "home-connect": {
+    "label": {
+      "name": "Name",
+      "connection": "Connection",
+      "environment": "Environment",
+      "allowWrite": "Allow write access"
+    }
+  }
+}

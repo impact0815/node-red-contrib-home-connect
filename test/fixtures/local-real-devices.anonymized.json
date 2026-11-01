@@ -1,0 +1,42 @@
+[
+  {
+    "fixture": "siemens-dishwasher",
+    "type": "Dishwasher",
+    "name": "Geschirrspüler",
+    "brand": "Siemens",
+    "model": "SX678X36TE",
+    "transport": "TLS",
+    "initialVersion": 2,
+    "servicesShape": "array",
+    "services": { "ci": 3, "ei": 2, "iz": 1, "ni": 1, "ro": 1 },
+    "values": [{ "uid": 512, "value": 1 }],
+    "rejectsEmptyDataOnCiServices": true
+  },
+  {
+    "fixture": "siemens-washer",
+    "type": "Washer",
+    "name": "Waschmaschine",
+    "brand": "Siemens",
+    "model": "WM4YH740",
+    "transport": "AES",
+    "initialVersion": 1,
+    "servicesShape": "array",
+    "services": { "ci": 2, "ei": 1, "ni": 1, "ro": 1 },
+    "authentication": { "action": "GET", "version": 2 },
+    "values": [{ "uid": 512, "value": 3 }],
+    "rejectsEmptyDataOnCiServices": true
+  },
+  {
+    "fixture": "siemens-oven",
+    "type": "Oven",
+    "name": "Backofen",
+    "brand": "Siemens",
+    "model": "HS658GXS7",
+    "transport": "AES",
+    "initialVersion": 2,
+    "servicesShape": "nested",
+    "services": { "ci": 3, "ei": 2, "ni": 1, "ro": 2 },
+    "values": [{ "uid": 512, "value": 5 }],
+    "rejectsEmptyDataOnCiServices": true
+  }
+]

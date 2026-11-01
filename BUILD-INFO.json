@@ -1,0 +1,23 @@
+{
+  "packageName": "node-red-contrib-home-connect",
+  "packageVersion": "0.2.0",
+  "buildId": "hc-0.2.0-final",
+  "oauthFlow": "authorization_code_client_secret",
+  "pkce": false,
+  "localTransport": "read-only",
+  "dashboardLocales": [
+    "de",
+    "en"
+  ],
+  "dashboardLanguageStorageKey": "home-connect-dashboard-language",
+  "dashboardCompatibility": "@flowfuse/node-red-dashboard@1.34.1",
+  "dashboardLabelBinding": "computed-hcLabels",
+  "screenshotExample": "examples/dashboard-screenshot-simulated.json",
+  "releaseStatus": "final",
+  "featureFreeze": "2026-11-01",
+  "isolatedDemo": "examples/demo-home-connect-flowfuse-1.34.1-scriptless.json",
+  "documentationScreenshots": [
+    "docs/images/dashboard-overview-en.png",
+    "docs/images/dashboard-details-en.png"
+  ]
+}

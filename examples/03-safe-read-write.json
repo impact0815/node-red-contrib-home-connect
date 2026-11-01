@@ -1,0 +1,155 @@
+[
+  {
+    "id": "hc-safe-flow",
+    "type": "tab",
+    "label": "Home Connect 03 – Sicher lesen/schreiben",
+    "disabled": false,
+    "info": "Snapshot lesen und einen Start ausschließlich als Dry-Run validieren."
+  },
+  {
+    "id": "hc-safe-note",
+    "type": "comment",
+    "z": "hc-safe-flow",
+    "name": "Dry-Run sendet nichts • Simulator-ID ist kein echtes Gerät",
+    "info": "Für Production zuerst eigene Geräte entdecken und die erkannte haId auswählen. Dry-Run erst nach Prüfung bewusst deaktivieren. Outputs include health/warnings (home-connect-health/v1). No firmware data or undocumented endpoint is used.",
+    "x": 320,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "hc-safe-config",
+    "type": "home-connect-config",
+    "name": "Home Connect – integrierter Simulator",
+    "environment": "builtin-simulator",
+    "redirectUri": "http://localhost:1880/home-connect/oauth/callback",
+    "scope": "IdentifyAppliance",
+    "language": "de-DE",
+    "allowWrite": true,
+    "requestTimeout": 15000,
+    "maxRequestsPerDay": 900,
+    "minimumRequestInterval": 250
+  },
+  {
+    "id": "hc-safe-read-inject",
+    "type": "inject",
+    "z": "hc-safe-flow",
+    "name": "Backofen-Snapshot lesen",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 160,
+    "y": 100,
+    "wires": [
+      [
+        "hc-safe-read"
+      ]
+    ]
+  },
+  {
+    "id": "hc-safe-read",
+    "type": "home-connect-read",
+    "z": "hc-safe-flow",
+    "name": "Snapshot",
+    "connection": "hc-safe-config",
+    "operation": "snapshot",
+    "haId": "oven-001",
+    "key": "",
+    "subKey": "",
+    "x": 390,
+    "y": 100,
+    "wires": [
+      [
+        "hc-safe-debug-data"
+      ],
+      [
+        "hc-safe-debug-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-safe-write-inject",
+    "type": "inject",
+    "z": "hc-safe-flow",
+    "name": "Start nur validieren",
+    "props": [
+      {
+        "p": "payload",
+        "v": "{\"action\":\"start-program\",\"program\":\"Cooking.Oven.Program.HeatingMode.HotAir\",\"options\":[{\"key\":\"Cooking.Oven.Option.SetpointTemperature\",\"value\":180}],\"confirm\":\"CONFIRM\"}",
+        "vt": "json"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 150,
+    "y": 170,
+    "wires": [
+      [
+        "hc-safe-write"
+      ]
+    ]
+  },
+  {
+    "id": "hc-safe-write",
+    "type": "home-connect-write",
+    "z": "hc-safe-flow",
+    "name": "Sicherer Dry-Run",
+    "connection": "hc-safe-config",
+    "action": "from-message",
+    "haId": "oven-001",
+    "dryRun": true,
+    "confirmationMode": "token",
+    "allowedApplianceTypes": "Oven",
+    "x": 390,
+    "y": 170,
+    "wires": [
+      [
+        "hc-safe-debug-data"
+      ],
+      [
+        "hc-safe-debug-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-safe-debug-data",
+    "type": "debug",
+    "z": "hc-safe-flow",
+    "name": "Ergebnis",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "x": 620,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "hc-safe-debug-error",
+    "type": "debug",
+    "z": "hc-safe-flow",
+    "name": "Fehler",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 620,
+    "y": 180,
+    "wires": []
+  }
+]

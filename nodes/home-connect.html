@@ -1,0 +1,795 @@
+<script type="text/javascript">
+(function() {
+    const readOperations = [
+        ['snapshot', 'Snapshot + capabilities'],
+        ['appliances', 'Appliances'],
+        ['appliance', 'Appliance details'],
+        ['status', 'All status values'],
+        ['status-item', 'One status value'],
+        ['settings', 'All settings'],
+        ['setting', 'One setting'],
+        ['all-programs', 'All programs'],
+        ['programs', 'Available programs'],
+        ['program', 'Program constraints'],
+        ['active-program', 'Active program'],
+        ['active-options', 'Active program options'],
+        ['active-option', 'One active option'],
+        ['selected-program', 'Selected program'],
+        ['selected-options', 'Selected program options'],
+        ['selected-option', 'One selected option'],
+        ['commands', 'Commands'],
+        ['images', 'Image metadata'],
+        ['image', 'Image (JPEG buffer)'],
+        ['maps', 'Cleaning-robot maps'],
+        ['map', 'One cleaning-robot map'],
+        ['map-occupancy-grid', 'Map occupancy grid'],
+        ['map-layout', 'Map layout'],
+        ['map-cleaning-status', 'Map cleaning status'],
+        ['map-detected-objects', 'Map detected objects'],
+        ['map-detected-object', 'One detected object'],
+        ['map-rooms', 'Map rooms'],
+        ['map-room', 'One map room'],
+        ['map-zones', 'Map zones'],
+        ['map-zone', 'One map zone'],
+        ['map-robot-position', 'Robot position'],
+        ['map-config-restrictions', 'Map restrictions'],
+        ['map-cleaning-summaries', 'Cleaning summaries'],
+        ['map-cleaning-summary', 'One cleaning summary'],
+        ['capabilities', 'Force capability refresh']
+    ];
+
+    const localReadOperations = new Set([
+        'snapshot', 'appliances', 'appliance', 'status', 'status-item', 'settings', 'setting',
+        'all-programs', 'programs', 'program', 'active-program', 'active-options', 'active-option',
+        'selected-program', 'selected-options', 'selected-option', 'commands', 'capabilities'
+    ]);
+
+    function shortTechnicalId(value) {
+        const id = String(value || '').trim();
+        return id ? '…' + id.slice(-4) : '';
+    }
+
+    function deviceLabel(appliance) {
+        if (appliance?.displayLabel) return appliance.displayLabel;
+        const type = appliance?.type || 'Appliance';
+        const names = { Dishwasher: 'Geschirrspüler', Washer: 'Waschmaschine', Oven: 'Backofen' };
+        const name = appliance?.name || names[type] || '';
+        const model = String(appliance?.model || appliance?.vib || appliance?.eNumber || '').split('/')[0];
+        const brandModel = [appliance?.brand, model].filter(Boolean).join(' ');
+        return [type, name, brandModel, shortTechnicalId(appliance?.haId)].filter((value, index, values) => value && values.findIndex(other => String(other).toLowerCase() === String(value).toLowerCase()) === index).join(' — ');
+    }
+
+    function fillDeviceSelector(items, allowAll, preferred) {
+        const selector = $('#node-input-haId');
+        const current = selector.val() || preferred;
+        if (!selector.is('select')) {
+            selector.autocomplete({ source: items, minLength: 0 }).autocomplete('search', '');
+            return;
+        }
+        selector.empty();
+        if (allowAll) selector.append($('<option></option>').val('*').text('All configured appliances / Alle konfigurierten Geräte'));
+        items.forEach(item => selector.append($('<option></option>').val(item.value).text(item.label)));
+        if (current && selector.find('option').filter(function() { return $(this).val() === current; }).length) selector.val(current);
+        else if (!allowAll && items.length) selector.val(items[0].value);
+    }
+
+    function prepareApplianceDiscovery(options = {}) {
+        const load = function(event) {
+            event?.preventDefault();
+            const connection = $('#node-input-connection').val();
+            const result = $('.hc-device-result').text('…');
+            if (!connection) { result.text('Select a connection first'); return; }
+            $.getJSON('home-connect/config/' + encodeURIComponent(connection) + '/appliances')
+                .done(data => {
+                    const items = (data.appliances || []).filter(entry => entry.appliance).map(entry => ({
+                        label: deviceLabel(entry.appliance),
+                        value: entry.appliance.haId
+                    }));
+                    fillDeviceSelector(items, options.allowAll === true, options.current);
+                    result.text('✓ ' + items.length + ' appliance(s)');
+                })
+                .fail(xhr => result.text('✗ ' + (xhr.responseJSON?.error?.message || xhr.statusText)));
+        };
+        $('.hc-load-devices').on('click', load);
+        $('#node-input-connection').on('change', () => setTimeout(load, 0));
+        if ($('#node-input-connection').val()) setTimeout(load, 0);
+        return load;
+    }
+
+    function localHostCheck(value) {
+        const host = String(value || '').trim().replace(/^\[|\]$/g, '');
+        if (!host) return { valid: false, message: 'Host/IP fehlt / Host/IP is missing.' };
+        if (/[\s/@?#]/.test(host) || /^[a-z]+:\/\//i.test(host)) return { valid: false, message: 'Nur Hostname oder IP ohne http://, Port oder Pfad eingeben.' };
+        const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+        if (ipv4) {
+            const parts = ipv4.slice(1).map(Number);
+            if (parts.some(part => part > 255)) return { valid: false, message: 'Ungültige IPv4-Adresse / invalid IPv4 address.' };
+            const local = parts[0] === 10 || (parts[0] === 169 && parts[1] === 254)
+                || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)
+                || (parts[0] === 192 && parts[1] === 168);
+            return local
+                ? { valid: true, message: '✓ Private/link-lokale IP / private or link-local IP.' }
+                : { valid: false, message: 'Nur private oder link-lokale IP-Adressen sind erlaubt.' };
+        }
+        if (host.includes(':')) {
+            const plain = host.toLowerCase().split('%')[0];
+            const local = /^(?:fe[89ab]|f[cd])/.test(plain);
+            return local
+                ? { valid: true, message: '✓ Private/link-lokale IPv6-Adresse.' }
+                : { valid: false, message: 'Nur private oder link-lokale IPv6-Adressen sind erlaubt.' };
+        }
+        if (!/^[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?$/i.test(host)) return { valid: false, message: 'Ungültiger Hostname / invalid hostname.' };
+        return { valid: true, pending: true, message: 'Hostname wird beim Verbindungstest auf eine private/link-lokale IP geprüft.' };
+    }
+
+    function validLocalMappings(value) {
+        try {
+            const parsed = JSON.parse(value || '[]');
+            const ids = new Set();
+            return Array.isArray(parsed) && parsed.length <= 100 && parsed.every(entry => {
+                const id = String(entry?.profileId || '').trim();
+                const connection = entry?.connectionType || 'auto';
+                if (!id || ids.has(id) || !['auto', 'AES', 'TLS'].includes(connection)) return false;
+                ids.add(id);
+                return localHostCheck(entry?.host).valid;
+            });
+        } catch (_error) { return false; }
+    }
+
+    function friendlyLocalError(error) {
+        const code = error?.code || 'UNEXPECTED_ERROR';
+        const details = error?.details || {};
+        const messages = {
+            LOCAL_PROFILE_PATH_REQUIRED: 'Profilordner fehlt / profile folder is missing.',
+            LOCAL_PROFILE_PATH_UNREADABLE: 'Profilordner ist für Node-RED nicht lesbar. Mount/Pfad und Rechte prüfen.',
+            LOCAL_PROFILE_FOLDER_REQUIRED: 'Bitte einen Ordner statt einer einzelnen Datei auswählen.',
+            LOCAL_PROFILE_FILES_INCOMPLETE: 'Profil ist unvollständig: Geräte-JSON, DeviceDescription.xml und FeatureMapping.xml zusammenlassen.',
+            LOCAL_PROFILE_KEY_MISSING: 'Geräteprofil enthält keinen PSK. Profil vollständig neu herunterladen.',
+            LOCAL_PROFILE_DUPLICATE: 'Profil-ID ist doppelt. Jede Profil-ID darf nur einmal vorkommen.',
+            LOCAL_MAPPING_HOST_REQUIRED: 'Host/IP fehlt. Für dieses Gerät eine private oder link-lokale Adresse eintragen.',
+            LOCAL_MAPPING_PROFILE_NOT_FOUND: 'Profil wurde im Ordner nicht mehr gefunden. Erneut Profile suchen.',
+            LOCAL_HOST_INVALID: 'Host/IP ist ungültig. Nur Hostname oder IP ohne URL, Port oder Pfad eingeben.',
+            LOCAL_HOST_NOT_PRIVATE: 'Ziel ist nicht ausschließlich privat/link-lokal und wurde blockiert.',
+            LOCAL_CONNECT_TIMEOUT: 'Zeitüberschreitung. Geräte-IP, WLAN, VLAN/Firewall und Port prüfen.',
+            LOCAL_HANDSHAKE_TIMEOUT: 'Lokaler Protokoll-Handshake hat nicht rechtzeitig geantwortet. Profil, Transport und Netzwerk prüfen.',
+            LOCAL_REQUEST_TIMEOUT: 'Das Gerät hat auf die lokale Leseanfrage nicht rechtzeitig geantwortet.',
+            LOCAL_NETWORK_ERROR: 'Netzwerkfehler. IP/Hostname, WLAN, VLAN, Firewall und Erreichbarkeit prüfen.',
+            LOCAL_CONNECT_FAILED: 'Lokales Gerät nicht erreichbar. IP, WLAN, VLAN/Firewall und Verbindungsart prüfen.',
+            LOCAL_DISCONNECTED: 'Lokale Verbindung wurde getrennt. Gerätestrom/Standby, WLAN, VLAN und Firewall prüfen; die Session wird neu aufgebaut.',
+            LOCAL_HEARTBEAT_TIMEOUT: 'Das Gerät antwortet nicht mehr auf WebSocket-Ping. Verbindung und Session werden neu aufgebaut.',
+            LOCAL_TRANSPORT_UNSUPPORTED: 'Die gewählte Verbindungsart wird vom Gerät nicht unterstützt. Auto bzw. AES/TLS prüfen.',
+            LOCAL_TLS_PSK_UNAVAILABLE: 'TLS-PSK ist in dieser Node.js/OpenSSL-Laufzeit nicht verfügbar.',
+            LOCAL_WEBSOCKET_UPGRADE_FAILED: 'Das Gerät hat das WebSocket-Upgrade auf /homeconnect abgelehnt. Profilzuordnung, Auto/AES/TLS und Geräte-IP prüfen.',
+            LOCAL_CRYPTO_AUTH_FAILED: 'Profil-Schlüssel passt nicht zum Gerät. Profile neu herunterladen.',
+            LOCAL_CRYPTO_PADDING_INVALID: 'AES-CBC wurde entschlüsselt, aber IV/PSK oder der Nachrichtenstrom passen nicht zum Gerät.',
+            LOCAL_CRYPTO_TEXT_INVALID: 'AES-CBC wurde entschlüsselt, lieferte aber keinen gültigen Home-Connect-Text.',
+            LOCAL_PROFILE_KEY_LENGTH_INVALID: 'Der Profil-PSK hat nicht die erwarteten 32 Byte.',
+            LOCAL_PROFILE_IV_INVALID: 'Der AES-IV hat nicht die erwarteten 16 Byte.',
+            LOCAL_PROFILE_KEY_REJECTED: 'PSK/Profil passt nicht zum Gerät. Richtiges Geräteprofil neu herunterladen.',
+            LOCAL_PROFILE_AUTHENTICATION_FAILED: 'Lokale Profil-Authentifizierung wurde abgelehnt. Profil und Gerätezuordnung prüfen.',
+            LOCAL_SERVICES_INVALID: 'Das Gerät hat keine auswertbaren Service-Versionen geliefert.',
+            LOCAL_PROTOCOL_RESPONSE_MISMATCH: 'Die Geräteantwort gehört nicht zur erwarteten Ressource; sicheren Mitschnitt prüfen.',
+            LOCAL_PROTOCOL_REJECTED: 'Das Gerät hat die lokale Protokollanfrage abgelehnt.',
+            LOCAL_TRACE_PATH_INVALID: 'Mitschnittpfad muss ein absoluter Pfad auf dem Node-RED-Host sein.'
+        };
+        let extra = '';
+        if (code === 'LOCAL_PROTOCOL_REJECTED' && details.resource) {
+            extra = ' Abgelehnt: ' + (details.action || 'GET') + ' ' + details.resource
+                + ' · Version ' + (details.version ?? '?') + ' · Gerätecode ' + (details.deviceCode ?? error?.status ?? '?') + '.';
+        } else if (code === 'LOCAL_NETWORK_ERROR' && details.causeCode) {
+            extra = ' Ursache: ' + details.causeCode + '.';
+        }
+        if (details.hintDe) extra += ' ' + details.hintDe;
+        if (details.hintEn) extra += ' / ' + details.hintEn;
+        return (messages[code] || error?.message || code) + extra + ' [' + code + ']';
+    }
+
+    function postJson(url, body) {
+        return $.ajax({
+            url,
+            method: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify(body)
+        });
+    }
+
+    RED.nodes.registerType('home-connect-config', {
+        category: 'config',
+        defaults: {
+            name: { value: '' },
+            environment: { value: 'production', required: true },
+            redirectUri: {
+                value: 'http://localhost:1880/home-connect/oauth/callback',
+                required: true,
+                validate: function(value) {
+                    try {
+                        const uri = new URL(value);
+                        return ['http:', 'https:'].includes(uri.protocol)
+                            && uri.pathname.endsWith('/home-connect/oauth/callback')
+                            && !uri.pathname.endsWith('/home-connect/oauth/callback/');
+                    } catch (_error) {
+                        return false;
+                    }
+                }
+            },
+            scope: { value: 'IdentifyAppliance', required: true },
+            language: { value: 'en-GB', required: true },
+            requestTimeout: { value: 15000, required: true, validate: RED.validators.number() },
+            maxRequestsPerDay: { value: 900, required: true, validate: RED.validators.number() },
+            minimumRequestInterval: { value: 250, required: true, validate: RED.validators.number() },
+            localProfilePath: { value: '' },
+            localDeviceMappings: { value: '[]', validate: validLocalMappings },
+            localProtocolTrace: { value: false },
+            localProtocolTracePath: { value: '' },
+            allowWrite: { value: false }
+        },
+        credentials: {
+            clientId: { type: 'text' },
+            clientSecret: { type: 'password' },
+            refreshToken: { type: 'password' },
+            localProfileJson: { type: 'password' }
+        },
+        label: function() { return this.name || 'Home Connect'; },
+        oneditprepare: function() {
+            const id = this.id;
+            let runtimeStatus = null;
+            let credentialsEdited = false;
+            let detectedProfiles = [];
+            const runtimeFields = '#node-config-input-name,#node-config-input-environment,#node-config-input-redirectUri,#node-config-input-scope,#node-config-input-maxRequestsPerDay,#node-config-input-minimumRequestInterval,#node-config-input-localProfilePath,#node-config-input-localDeviceMappings,#node-config-input-localProtocolTrace,#node-config-input-localProtocolTracePath';
+            const credentialField = $('#node-config-input-localProfileJson');
+            const manualEditor = $('#hc-manual-json-editor');
+            const storedCredential = credentialField.val() === ('__' + 'PWRD__');
+            manualEditor.val(storedCredential ? '' : (credentialField.val() || ''));
+
+            function currentSetup() {
+                return {
+                    name: $('#node-config-input-name').val().trim(),
+                    environment: $('#node-config-input-environment').val(),
+                    redirectUri: $('#node-config-input-redirectUri').val().trim(),
+                    scope: $('#node-config-input-scope').val().trim().replace(/\s+/g, ' '),
+                    maxRequestsPerDay: Number($('#node-config-input-maxRequestsPerDay').val()),
+                    minimumRequestInterval: Number($('#node-config-input-minimumRequestInterval').val()),
+                    localProfilePath: $('#node-config-input-localProfilePath').val().trim(),
+                    localDeviceMappings: $('#node-config-input-localDeviceMappings').val() || '[]',
+                    localProtocolTrace: $('#node-config-input-localProtocolTrace').prop('checked'),
+                    localProtocolTracePath: $('#node-config-input-localProtocolTracePath').val().trim()
+                };
+            }
+
+            function environmentNameWarning(setup) {
+                const name = setup.name.toLowerCase();
+                const simulatorName = /simulator|simulation|test/.test(name);
+                const productionName = /production|produktiv|live/.test(name);
+                if (setup.environment === 'production' && simulatorName) return '⚠ Der Name klingt nach Simulator, ausgewählt ist aber Production. Bitte eindeutig benennen.';
+                if (setup.environment.includes('simulator') && productionName) return '⚠ The name sounds like Production, but a simulator is selected. Rename it clearly.';
+                return '';
+            }
+
+            function redirectWarning(uriText) {
+                if (!uriText) return '⚠ Redirect URI fehlt / is missing.';
+                let uri;
+                try { uri = new URL(uriText); }
+                catch (_error) { return '⚠ Keine gültige URL / not a valid URL.'; }
+                if (!['http:', 'https:'].includes(uri.protocol)) return '⚠ Nur http:// oder https:// verwenden.';
+                if (!uri.pathname.endsWith('/home-connect/oauth/callback') || uri.pathname.endsWith('/')) return '⚠ Der Pfad muss exakt mit /home-connect/oauth/callback enden – ohne Slash danach.';
+                if (['localhost', '127.0.0.1', '::1'].includes(uri.hostname)) return '⚠ localhost funktioniert nur, wenn dieser Browser auf demselben Rechner wie Node-RED läuft.';
+                return '✓ Format plausibel. Im Developer Portal Zeichen für Zeichen identisch eintragen.';
+            }
+
+            function scopeWarning(scopeText) {
+                const scopes = new Set(scopeText.split(/\s+/).filter(Boolean));
+                if (!scopes.has('IdentifyAppliance')) return '⚠ IdentifyAppliance fehlt; die Geräteliste kann sonst nicht geladen werden.';
+                if (scopes.has('Monitor') && ![...scopes].some(value => /-(Monitor|Settings|Control)$/.test(value))) return '⚠ Der allgemeine Scope Monitor reicht nicht für jedes Konto. Bei insufficient_scope gerätespezifische Scopes verwenden.';
+                return '✓ IdentifyAppliance ist enthalten. Nach jeder Scope-Änderung neu autorisieren.';
+            }
+
+            function savedMappings() {
+                try { return JSON.parse($('#node-config-input-localDeviceMappings').val() || '[]'); }
+                catch (_error) { return []; }
+            }
+
+            function validateCard(row) {
+                const state = localHostCheck(row.find('.hc-local-host').val());
+                row.toggleClass('hc-device-invalid', !state.valid);
+                row.find('.hc-local-host').toggleClass('input-error', !state.valid);
+                row.find('.hc-local-host-message')
+                    .toggleClass('hc-warn', !state.valid || state.pending)
+                    .toggleClass('hc-ok', state.valid && !state.pending)
+                    .text(state.message);
+                row.find('.hc-test-local-device').prop('disabled', !state.valid);
+                return state.valid;
+            }
+
+            function storeMappings() {
+                const mappings = [];
+                $('#hc-local-devices .hc-local-device').each(function() {
+                    mappings.push({
+                        profileId: String($(this).data('profile-id')),
+                        host: $(this).find('.hc-local-host').val().trim(),
+                        connectionType: $(this).find('.hc-local-connection').val() || 'auto'
+                    });
+                });
+                $('#node-config-input-localDeviceMappings').val(JSON.stringify(mappings)).trigger('change');
+                return mappings;
+            }
+
+            function testLocalDevice(event) {
+                event.preventDefault();
+                const button = $(event.currentTarget);
+                const row = button.closest('.hc-local-device');
+                const result = row.find('.hc-local-test-result');
+                if (!validateCard(row)) { result.removeClass('hc-ok').addClass('hc-warn').text('✗ Host/IP zuerst korrigieren.'); return; }
+                button.prop('disabled', true);
+                const stageBox = row.find('.hc-local-test-stages');
+                const traceBox = row.find('.hc-local-protocol-trace');
+                const stageNames = {
+                    'ip-reachable': 'IP erreichbar / IP reachable',
+                    'profile-loaded': 'Profil geladen / Profile loaded',
+                    'transport-recognized': 'Transport erkannt / Transport detected',
+                    'websocket-connected': 'WebSocket verbunden / WebSocket connected',
+                    'session-initialized': 'Session initialisiert / Session initialized',
+                    'services-recognized': 'Services erkannt / Services detected',
+                    'readonly-data-received': 'Read-only-Daten empfangen / Read-only data received'
+                };
+                const stageOrder = Object.keys(stageNames);
+                function renderStages(stages) {
+                    const values = new Map((stages || []).map(stage => [stage.id, stage]));
+                    const list = $('<ol></ol>');
+                    stageOrder.forEach(id => {
+                        const stage = values.get(id) || { status: 'pending' };
+                        const icons = { ok: '✓', failed: '✗', skipped: '–', pending: '…' };
+                        const item = $('<li></li>')
+                            .addClass('hc-stage-' + stage.status)
+                            .text((icons[stage.status] || '…') + ' ' + stageNames[id]);
+                        if (stage.status === 'failed') item.append($('<div class="hc-stage-detail"></div>').text(friendlyLocalError(stage)));
+                        if (stage.status === 'ok' && id === 'transport-recognized' && stage.details?.transport) {
+                            item.append($('<span class="hc-stage-meta"></span>').text(' · ' + stage.details.transport + ' · Port ' + stage.details.port + ' · ' + stage.details.path));
+                        }
+                        list.append(item);
+                    });
+                    stageBox.empty().append(list).show();
+                }
+                function renderTrace(trace) {
+                    if (!trace?.enabled) { traceBox.empty().hide(); return; }
+                    const summary = $('<summary></summary>').text('Bereinigter Protokoll-Mitschnitt / sanitized protocol trace (' + (trace.entries?.length || 0) + ')');
+                    const text = JSON.stringify(trace, null, 2);
+                    traceBox.empty().append(summary, $('<pre></pre>').text(text)).show();
+                }
+                renderStages([]);
+                renderTrace(null);
+                result.removeClass('hc-ok hc-warn').text('… gestufter lokaler Read-only-Test läuft …');
+                const mappings = storeMappings();
+                postJson('home-connect/local-profiles/test', {
+                    path: $('#node-config-input-localProfilePath').val().trim(),
+                    profileId: String(row.data('profile-id')),
+                    host: row.find('.hc-local-host').val().trim(),
+                    connectionType: row.find('.hc-local-connection').val() || 'auto',
+                    mappings,
+                    requestTimeout: Number($('#node-config-input-requestTimeout').val()) || 15000,
+                    traceEnabled: $('#node-config-input-localProtocolTrace').prop('checked'),
+                    tracePath: $('#node-config-input-localProtocolTracePath').val().trim()
+                }).done(data => {
+                    renderStages(data.stages);
+                    renderTrace(data.protocolTrace);
+                    result.removeClass('hc-warn').addClass('hc-ok').text('✓ Lokal verbunden, nur gelesen · ' + data.transport + ' · ' + data.readValues + ' Werte / values');
+                }).fail(xhr => {
+                    const data = xhr.responseJSON || {};
+                    renderStages(data.stages);
+                    renderTrace(data.protocolTrace);
+                    const failed = (data.stages || []).find(stage => stage.status === 'failed');
+                    result.removeClass('hc-ok').addClass('hc-warn').text('✗ Test gestoppt bei: ' + (stageNames[failed?.id] || 'lokaler Verbindung') + '.');
+                }).always(() => button.prop('disabled', !validateCard(row)));
+            }
+
+            function renderLocalProfiles(profiles) {
+                detectedProfiles = profiles;
+                const previous = new Map(savedMappings().map(entry => [entry.profileId, entry]));
+                const container = $('#hc-local-devices').empty();
+                profiles.forEach(profile => {
+                    const existing = previous.get(profile.profileId) || {};
+                    const row = $('<div class="hc-local-device"></div>').data('profile-id', profile.profileId);
+                    const title = $('<div class="hc-local-device-title"></div>').text(profile.displayLabel || deviceLabel({ ...profile, haId: profile.profileId }));
+                    const files = profile.files || {};
+                    const fileSummary = [files.deviceJson, ...(files.deviceDescription || []), ...(files.featureMapping || [])].filter(Boolean).join(' · ');
+                    const source = $('<div class="hc-local-device-source"></div>').text((profile.type || 'Unknown') + ' · ' + (fileSummary || profile.profileSource) + ' · erkannt/detected: ' + profile.detectedConnectionType);
+                    const host = $('<input type="text" class="hc-local-host" autocomplete="off" placeholder="z. B. geraet.local">').val(existing.host || profile.detectedHost || '');
+                    const hostMessage = $('<div class="hc-local-host-message hc-mini-card"></div>');
+                    const connection = $('<select class="hc-local-connection"><option value="auto">Auto (empfohlen / recommended)</option><option value="AES">AES (Port 80)</option><option value="TLS">TLS (Port 443)</option></select>').val(existing.connectionType || 'auto');
+                    const test = $('<button type="button" class="red-ui-button hc-test-local-device"><i class="fa fa-check-circle"></i> Verbindung testen / Test connection</button>');
+                    const testResult = $('<span class="hc-local-test-result"></span>');
+                    const testStages = $('<div class="hc-local-test-stages" style="display:none"></div>');
+                    const protocolTrace = $('<details class="hc-local-protocol-trace" style="display:none"></details>');
+                    row.append(
+                        title,
+                        source,
+                        $('<div class="hc-card-field"><label>Host/IP</label></div>').append(host),
+                        hostMessage,
+                        $('<div class="hc-card-field"><label>Verbindungsart</label></div>').append(connection),
+                        $('<div class="hc-card-actions"></div>').append(test, ' ', testResult, testStages, protocolTrace)
+                    );
+                    container.append(row);
+                    host.on('input change', () => { validateCard(row); storeMappings(); });
+                    connection.on('change', storeMappings);
+                    test.on('click', testLocalDevice);
+                    validateCard(row);
+                });
+                storeMappings();
+            }
+
+            function renderScanErrors(errors) {
+                const box = $('#hc-local-scan-errors').empty();
+                if (!errors.length) { box.hide(); return; }
+                const list = $('<ul></ul>');
+                errors.forEach(error => list.append($('<li></li>').text((error.messageDe || error.message || error.code) + ' [' + error.code + ']')));
+                box.append($('<b></b>').text('Hinweise zu unvollständigen oder doppelten Profilen:'), list).show();
+            }
+
+            function scanLocalProfiles(event) {
+                event?.preventDefault();
+                const profilePath = $('#node-config-input-localProfilePath').val().trim();
+                const result = $('#hc-local-scan-result');
+                if (!profilePath) {
+                    detectedProfiles = [];
+                    $('#hc-local-devices').empty();
+                    $('#node-config-input-localDeviceMappings').val('[]').trigger('change');
+                    renderScanErrors([]);
+                    result.removeClass('hc-ok').addClass('hc-warn').text('Profilordner angeben / enter a profile folder.');
+                    return;
+                }
+                result.removeClass('hc-ok hc-warn').text('… Profile werden rekursiv gesucht / scanning recursively …');
+                $.getJSON('home-connect/local-profiles/scan', { path: profilePath })
+                    .done(data => {
+                        renderLocalProfiles(data.profiles || []);
+                        renderScanErrors(data.errors || []);
+                        const count = (data.profiles || []).length;
+                        const text = count === 1 ? '1 Geräteprofil gefunden' : count + ' Geräteprofile gefunden';
+                        const english = count === 1 ? '1 device profile found' : count + ' device profiles found';
+                        const warnings = (data.errors || []).length ? ' · ' + data.errors.length + ' Hinweis(e) / issue(s)' : '';
+                        result.removeClass('hc-warn').addClass('hc-ok').text('✓ ' + text + ' / ' + english + warnings);
+                        $('#hc-local-scan-help').text(count
+                            ? 'Nächster Schritt: Für jedes Gerät Host/IP prüfen, Auto beibehalten und „Verbindung testen“ ausführen. Der Zugriff bleibt vollständig read-only.'
+                            : 'Keine vollständigen Profile gefunden. Geräte-JSON, DeviceDescription.xml und FeatureMapping.xml je Gerät zusammen in den Profilordner legen.');
+                    })
+                    .fail(xhr => {
+                        detectedProfiles = [];
+                        $('#hc-local-devices').empty();
+                        $('#node-config-input-localDeviceMappings').val('[]').trigger('change');
+                        renderScanErrors([]);
+                        result.removeClass('hc-ok').addClass('hc-warn').text('✗ ' + friendlyLocalError(xhr.responseJSON?.error));
+                    });
+            }
+
+            function updateManualState() {
+                const folderActive = Boolean($('#node-config-input-localProfilePath').val().trim());
+                manualEditor.prop('disabled', folderActive);
+                $('#hc-manual-json-note').text(folderActive
+                    ? 'Der Profilordner ist aktiv. Manuelles JSON bleibt sicher gespeichert, wird aber erst verwendet, wenn der Ordnerpfad geleert wird.'
+                    : 'Kein Profilordner aktiv: Optional kann hier vollständiges Profil-JSON eingefügt werden.');
+            }
+
+            const update = () => {
+                const builtin = $('#node-config-input-environment').val() === 'builtin-simulator';
+                const local = $('#node-config-input-environment').val() === 'local';
+                const cloud = !builtin && !local;
+                $('.hc-oauth-row,.hc-cloud-row').toggle(cloud);
+                $('.hc-local-row').toggle(local);
+                $('.hc-nonlocal-row').toggle(!local);
+                $('.hc-write-row').toggle(!local);
+                const setup = currentSetup();
+                const runtimeMatches = runtimeStatus && runtimeStatus.ok
+                    && !credentialsEdited
+                    && runtimeStatus.name === setup.name
+                    && runtimeStatus.environment === setup.environment
+                    && runtimeStatus.redirectUri === setup.redirectUri
+                    && String(runtimeStatus.scope || '').trim().replace(/\s+/g, ' ') === setup.scope
+                    && runtimeStatus.maxRequestsPerDay === setup.maxRequestsPerDay
+                    && runtimeStatus.minimumRequestInterval === setup.minimumRequestInterval
+                    && runtimeStatus.localProfilePath === setup.localProfilePath
+                    && runtimeStatus.localDeviceMappings === setup.localDeviceMappings
+                    && runtimeStatus.localProtocolTrace === setup.localProtocolTrace
+                    && runtimeStatus.localProtocolTracePath === setup.localProtocolTracePath;
+                const runtimeCredentialsReady = local
+                    ? (runtimeStatus?.hasLocalProfileJson || Boolean(setup.localProfilePath))
+                    : (runtimeStatus?.hasClientId && runtimeStatus?.hasClientSecret);
+                $('#hc-oauth').prop('disabled', !id || builtin || local || !runtimeMatches || !runtimeCredentialsReady);
+                $('#hc-test').prop('disabled', !id || !runtimeMatches);
+                if (cloud) {
+                    $('#hc-redirect-check').text(redirectWarning(setup.redirectUri));
+                    $('#hc-scope-check').text(scopeWarning(setup.scope));
+                    const rate = runtimeStatus?.rateLimit;
+                    if (rate?.blocked) $('#hc-rate-status').text('⚠ API-Aufrufe lokal pausiert: ' + rate.usedRequests + '/' + rate.maxRequests + '; erneut in ' + rate.retryAfter + ' s.');
+                    else if (rate) $('#hc-rate-status').text('Lokales Tagesbudget: ' + rate.usedRequests + '/' + rate.maxRequests + ' API-Aufrufe verwendet.');
+                    else $('#hc-rate-status').text('Tagesbudget wird nach dem Deploy angezeigt.');
+                }
+                $('#hc-name-check').text(environmentNameWarning(setup));
+                $('#node-config-input-localProtocolTracePath').prop('disabled', !setup.localProtocolTrace);
+                if (!id || !runtimeStatus) {
+                    $('#hc-runtime-status').removeClass('hc-ok').addClass('hc-warn').text(local
+                        ? 'Zuordnung speichern: Fertig → Deployen. Danach Read-/Events-Nodes verwenden.'
+                        : '1. Fertig klicken → 2. Deployen → 3. Verbindung erneut öffnen.');
+                } else if (!runtimeMatches) {
+                    $('#hc-runtime-status').removeClass('hc-ok').addClass('hc-warn').text('Änderungen sind noch nicht deployt / changes are not deployed. Fertig → Deploy → erneut öffnen.');
+                } else if (local && runtimeCredentialsReady) {
+                    $('#hc-runtime-status').removeClass('hc-warn').addClass('hc-ok').text('✓ Lokale Profile sind deployt; Zugriff ist fest schreibgeschützt (' + (runtimeStatus?.localProfiles || 0) + ' Gerät(e)).');
+                } else if (local) {
+                    $('#hc-runtime-status').removeClass('hc-ok').addClass('hc-warn').text('Profilordner oder optionales manuelles Profil-JSON fehlt.');
+                } else if (builtin) {
+                    $('#hc-runtime-status').removeClass('hc-warn').addClass('hc-ok').text('✓ Integrierter Simulator ist deployt.');
+                } else if (!runtimeCredentialsReady) {
+                    $('#hc-runtime-status').removeClass('hc-ok').addClass('hc-warn').text('Client ID oder Client Secret fehlt in der deployten Verbindung.');
+                } else {
+                    const auth = runtimeStatus.hasRefreshToken ? 'Refresh Token vorhanden / stored' : 'noch nicht autorisiert / not authorized yet';
+                    $('#hc-runtime-status').removeClass('hc-warn').addClass('hc-ok').text('✓ Konfiguration ist deployt (' + auth + ').');
+                }
+                updateManualState();
+            };
+
+            $('#hc-scan-local-profiles').on('click', scanLocalProfiles);
+            $('#node-config-input-localProfilePath').on('input', function() {
+                detectedProfiles = [];
+                $('#hc-local-devices').empty();
+                $('#node-config-input-localDeviceMappings').val('[]').trigger('change');
+                renderScanErrors([]);
+                $('#hc-local-scan-result').removeClass('hc-ok').addClass('hc-warn').text('Pfad geändert: „Profile suchen / Geräte erkennen“ klicken.');
+                updateManualState();
+            });
+            manualEditor.on('input', function() {
+                credentialField.val($(this).val());
+                credentialsEdited = true;
+                $('#hc-manual-json-status').text($(this).val().trim() ? 'Manuelles JSON wurde geändert; speichern und deployen.' : '');
+                update();
+            });
+            $('#hc-generate-manual-json').on('click', function(event) {
+                event.preventDefault();
+                const result = $('#hc-manual-json-status').removeClass('hc-ok hc-warn').text('… JSON wird sicher aus den erkannten Profilen erzeugt …');
+                const rows = $('#hc-local-devices .hc-local-device');
+                let valid = rows.length > 0;
+                rows.each(function() { valid = validateCard($(this)) && valid; });
+                if (!valid || detectedProfiles.length !== rows.length) {
+                    result.addClass('hc-warn').text('✗ Erst Profile suchen und alle Host-/IP-Felder korrigieren.');
+                    return;
+                }
+                const mappings = storeMappings();
+                postJson('home-connect/local-profiles/export', {
+                    path: $('#node-config-input-localProfilePath').val().trim(),
+                    mappings
+                }).done(data => {
+                    credentialField.val(data.profileJson);
+                    manualEditor.val(data.profileJson);
+                    credentialsEdited = true;
+                    $('#hc-local-advanced').prop('open', true);
+                    result.removeClass('hc-warn').addClass('hc-ok').text('✓ Optionales manuelles Profil-JSON erzeugt. Zum Verwenden den Profilordner leeren; sonst bleibt der Ordner aktiv.');
+                    update();
+                }).fail(xhr => result.removeClass('hc-ok').addClass('hc-warn').text('✗ ' + friendlyLocalError(xhr.responseJSON?.error)));
+            });
+
+            $('#node-config-input-environment').on('change', update);
+            $(runtimeFields).on('input change', update);
+            $('#node-config-input-clientId,#node-config-input-clientSecret').on('input', function() { credentialsEdited = true; update(); });
+            $('#hc-use-browser-address').on('click', function(event) {
+                event.preventDefault();
+                $('#node-config-input-redirectUri').val(window.location.origin + '/home-connect/oauth/callback').trigger('input');
+            });
+            $('#hc-copy-redirect').on('click', async function(event) {
+                event.preventDefault();
+                const value = $('#node-config-input-redirectUri').val();
+                try { await navigator.clipboard.writeText(value); $('#hc-copy-result').text('✓ kopiert / copied'); }
+                catch (_error) { $('#hc-copy-result').text('Bitte manuell kopieren / copy manually'); }
+            });
+            $('.hc-scope-preset').on('click', function(event) {
+                event.preventDefault();
+                $('#node-config-input-scope').val($(this).data('scope')).trigger('input');
+            });
+            if (storedCredential) $('#hc-manual-json-status').text('Optionales manuelles Profil-JSON ist sicher im Credential Store gespeichert; der Platzhalter wird nicht angezeigt.');
+            if (id) {
+                $.getJSON('home-connect/config/' + encodeURIComponent(id) + '/status')
+                    .done(data => { runtimeStatus = data; update(); })
+                    .fail(() => { runtimeStatus = null; update(); });
+            }
+            if ($('#node-config-input-localProfilePath').val().trim()) setTimeout(scanLocalProfiles, 0);
+            update();
+            $('#hc-oauth').on('click', function(event) {
+                event.preventDefault();
+                window.open('home-connect/oauth/' + encodeURIComponent(id) + '/start', '_blank', 'noopener');
+            });
+            $('#hc-test').on('click', function(event) {
+                event.preventDefault();
+                const result = $('#hc-test-result').text('…');
+                $.getJSON('home-connect/config/' + encodeURIComponent(id) + '/test')
+                    .done(data => result.text('✓ ' + data.appliances.length + ' appliance(s)'))
+                    .fail(xhr => result.text('✗ ' + (xhr.responseJSON?.error?.message || xhr.statusText)));
+            });
+        },
+        oneditsave: function() {
+            const rows = $('#hc-local-devices .hc-local-device');
+            if (!rows.length) return;
+            const mappings = [];
+            rows.each(function() {
+                mappings.push({
+                    profileId: String($(this).data('profile-id')),
+                    host: $(this).find('.hc-local-host').val().trim(),
+                    connectionType: $(this).find('.hc-local-connection').val() || 'auto'
+                });
+            });
+            $('#node-config-input-localDeviceMappings').val(JSON.stringify(mappings));
+        }
+    });
+
+    RED.nodes.registerType('home-connect-discover', {
+        category: 'Home Connect', color: '#6fa8dc', icon: 'font-awesome/fa-search',
+        defaults: { name: {value:''}, connection: {value:'', type:'home-connect-config', required:true}, mode:{value:'all'}, haId:{value:''} },
+        inputs: 1, outputs: 2, outputLabels: ['data', 'error'],
+        oneditprepare: prepareApplianceDiscovery,
+        label: function() { return this.name || 'Home Connect discover'; }
+    });
+
+    RED.nodes.registerType('home-connect-read', {
+        category: 'Home Connect', color: '#6fa8dc', icon: 'font-awesome/fa-download',
+        defaults: { name:{value:''}, connection:{value:'', type:'home-connect-config', required:true}, operation:{value:'snapshot'}, haId:{value:''}, key:{value:''}, subKey:{value:''} },
+        inputs: 1, outputs: 2, outputLabels: ['data', 'error'],
+        oneditprepare: function() {
+            prepareApplianceDiscovery({ current: this.haId });
+            const select = $('#node-input-operation').empty();
+            const selectedOperation = this.operation || 'snapshot';
+            const renderOperations = local => {
+                select.empty();
+                readOperations.filter(([value]) => !local || localReadOperations.has(value))
+                    .forEach(([value, label]) => select.append($('<option></option>').val(value).text(label)));
+                select.val(select.find('option[value="' + selectedOperation + '"]').length ? selectedOperation : 'snapshot');
+            };
+            const detectEnvironment = () => {
+                const connection = $('#node-input-connection').val();
+                if (!connection) { renderOperations(false); return; }
+                $.getJSON('home-connect/config/' + encodeURIComponent(connection) + '/status')
+                    .done(data => renderOperations(data.environment === 'local'))
+                    .fail(() => renderOperations(false));
+            };
+            $('#node-input-connection').on('change', detectEnvironment);
+            detectEnvironment();
+        },
+        label: function() { return this.name || 'Home Connect read'; }
+    });
+
+    RED.nodes.registerType('home-connect-events', {
+        category: 'Home Connect', color: '#f6b26b', icon: 'font-awesome/fa-bolt',
+        defaults: { name:{value:''}, connection:{value:'', type:'home-connect-config', required:true}, haId:{value:'*'} },
+        inputs: 1, outputs: 2, outputLabels: ['event', 'error'],
+        oneditprepare: function() { prepareApplianceDiscovery({ allowAll: true, current: this.haId || '*' }); },
+        label: function() { return this.name || 'Home Connect events'; }
+    });
+
+    RED.nodes.registerType('home-connect-write', {
+        category: 'Home Connect', color: '#e06666', icon: 'font-awesome/fa-shield',
+        defaults: {
+            name:{value:''}, connection:{value:'', type:'home-connect-config', required:true}, action:{value:'from-message'}, haId:{value:''},
+            dryRun:{value:true}, confirmationMode:{value:'token'}, allowedApplianceTypes:{value:''}
+        },
+        credentials: { confirmationToken: { type: 'password' } },
+        inputs: 1, outputs: 2, outputLabels: ['result', 'error'],
+        oneditprepare: prepareApplianceDiscovery,
+        label: function() { return this.name || 'Home Connect write'; }
+    });
+})();
+</script>
+
+<script type="text/html" data-template-name="home-connect-config">
+    <style>
+        .hc-guide{border-left:4px solid #00629b;padding:9px 12px;margin:8px 0;background:#f3f8fb}
+        .hc-warn{color:#9a6700}.hc-ok{color:#16794a}.hc-mini{display:block;margin:4px 0 0 105px;font-size:.9em}
+        .hc-actions{margin-left:105px}.hc-actions .red-ui-button{margin:3px 3px 3px 0}
+        .hc-local-device{border:1px solid #aaa;border-radius:6px;padding:12px;margin:10px 0 10px 105px;background:#fafafa}
+        .hc-local-device.hc-device-invalid{border-color:#b42318}.hc-local-device-title{font-weight:700;font-size:1.05em}
+        .hc-local-device-source{font-size:.82em;color:#666;margin:4px 0 9px;overflow-wrap:anywhere}
+        .hc-card-field{display:flex;align-items:center;margin:7px 0}.hc-card-field label{width:145px;margin:0}
+        .hc-card-field input,.hc-card-field select{flex:1;min-width:0}.hc-mini-card{font-size:.85em;margin:2px 0 4px 145px}
+        .hc-card-actions{margin:9px 0 0 145px}.hc-local-test-result{display:block;margin-top:5px;font-size:.9em}
+        .hc-local-test-stages{margin-top:7px;background:#fff;padding:7px 10px;border:1px solid #ccc;border-radius:4px}
+        .hc-local-test-stages ol{margin:0;padding-left:22px}.hc-local-test-stages li{margin:3px 0}
+        .hc-local-protocol-trace{margin-top:7px;background:#f7f7f7;border:1px solid #ccc;border-radius:4px;padding:6px 8px}
+        .hc-local-protocol-trace summary{cursor:pointer;font-weight:600}.hc-local-protocol-trace pre{max-height:22rem;overflow:auto;white-space:pre-wrap;font-size:.82em}
+        .hc-stage-ok{color:#16794a}.hc-stage-failed{color:#b42318}.hc-stage-skipped{color:#777}.hc-stage-detail{margin-left:4px}.hc-stage-meta{color:#555;font-size:.9em}
+        .hc-local-scan-help{margin:7px 0 8px 105px;background:#fff4ce;border-left:4px solid #d6b656;padding:8px 12px;box-sizing:border-box}
+        .hc-scan-errors{border-left:4px solid #9a6700;background:#fff8e6;padding:8px 12px;margin:8px 0 8px 105px}
+        .hc-scan-errors ul{margin:6px 0 0 18px}.hc-advanced{margin:12px 0 12px 105px;border:1px solid #bbb;border-radius:5px;padding:8px 10px}
+        .hc-advanced summary{cursor:pointer;font-weight:600}.hc-advanced textarea{width:100%;box-sizing:border-box;margin-top:8px}
+        .hc-advanced .red-ui-button{margin-top:7px}.input-error{border-color:#b42318!important}
+    </style>
+    <div class="hc-guide hc-local-row"><b>Lokales Netz – nur lesen:</b> Profilordner eintragen → <b>Profile suchen / Geräte erkennen</b> → pro Gerät Host/IP eintragen → <b>Auto</b> lassen → <b>Verbindung testen</b> → <b>Fertig</b> → <b>Deployen</b>.</div>
+    <div class="hc-guide hc-cloud-row"><b>Cloud:</b> Developer-Portal-Application eintragen → <b>Fertig</b> → <b>Deploy</b> → erneut öffnen → <b>Autorisieren</b>.</div>
+    <div class="form-row"><label for="node-config-input-name"><i class="fa fa-tag"></i> <span data-i18n="home-connect.label.name"></span></label><input id="node-config-input-name" type="text" placeholder="z. B. Home Connect Zuhause"></div>
+    <span id="hc-name-check" class="hc-mini hc-warn"></span>
+    <div class="form-row"><label for="node-config-input-environment"><i class="fa fa-server"></i> <span data-i18n="home-connect.label.environment"></span></label><select id="node-config-input-environment"><option value="local">Local LAN (read-only) / Lokales Netz (nur lesen)</option><option value="production">Production (api.home-connect.com)</option><option value="china">China (api.home-connect.cn)</option><option value="official-simulator">Official simulator</option><option value="builtin-simulator">Built-in simulator / Integrierter Simulator</option></select></div>
+
+    <div class="form-row hc-local-row"><label for="node-config-input-localProfilePath"><i class="fa fa-folder-open"></i> Profilordner</label><input id="node-config-input-localProfilePath" type="text" placeholder="/data/homeconnect-profiles (Pfad auf dem Node-RED-Server)"></div>
+    <input id="node-config-input-localDeviceMappings" type="hidden">
+    <div class="hc-actions hc-local-row"><button type="button" id="hc-scan-local-profiles" class="red-ui-button"><i class="fa fa-search"></i> Profile suchen / Geräte erkennen</button> <span id="hc-local-scan-result"></span></div>
+    <div id="hc-local-scan-help" class="hc-local-scan-help hc-local-row">Profilordner wählen und Profile suchen. Danach pro Gerät Host/IP prüfen und den gestuften Read-only-Verbindungstest starten.</div>
+    <div id="hc-local-scan-errors" class="hc-scan-errors hc-local-row" style="display:none"></div>
+    <div id="hc-local-devices" class="hc-local-row"></div>
+    <div class="form-tips hc-local-row"><b>Zentrale Zuordnung:</b> Jede Karte erzeugt automatisch <code>localDeviceMappings</code>. Sie schreiben kein Mapping-JSON. Erlaubt sind nur private/link-lokale Ziele. Read-Nodes wählen ausschließlich Gerät und Lese-Ressource; Events wählt ein Gerät oder alle. Lokales Schreiben bleibt technisch gesperrt.</div>
+
+    <input id="node-config-input-localProfileJson" type="password" style="display:none" autocomplete="new-password">
+    <details id="hc-local-advanced" class="hc-advanced hc-local-row">
+        <summary>Erweitert / Advanced</summary>
+        <p><b>Profil-JSON manuell einfügen (optional)</b></p>
+        <p>Verwenden Sie entweder den Profilordner oben oder vollständiges manuelles JSON. Solange ein Profilordner gesetzt ist, ist dieser Editor deaktiviert und der Ordner hat Vorrang. Schlüssel niemals veröffentlichen.</p>
+        <textarea id="hc-manual-json-editor" rows="8" placeholder="Optionales vollständiges Profil-JSON; kein Beispiel und kein Credential-Platzhalter"></textarea>
+        <div id="hc-manual-json-note" class="hc-mini-card"></div>
+        <button type="button" id="hc-generate-manual-json" class="red-ui-button"><i class="fa fa-magic"></i> Aus erkannten Profilen und Zuordnungen erzeugen</button>
+        <div id="hc-manual-json-status" class="hc-mini-card"></div>
+        <hr>
+        <p><b>Sicherer Protokoll-Mitschnitt (optional)</b></p>
+        <div class="form-row"><label for="node-config-input-localProtocolTrace"><i class="fa fa-file-text-o"></i> Mitschnitt</label><input id="node-config-input-localProtocolTrace" type="checkbox" style="width:auto"> entschlüsselte, bereinigte RX/TX-Nachrichten erfassen</div>
+        <div class="form-row"><label for="node-config-input-localProtocolTracePath">JSONL-Datei</label><input id="node-config-input-localProtocolTracePath" type="text" placeholder="optional: /data/homeconnect-local-protocol.jsonl"></div>
+        <p class="form-tips">Standardmäßig aus. Ohne Pfad bleibt ein begrenzter Mitschnitt nur im Speicher und erscheint beim Verbindungstest. Mit absolutem Pfad schreibt Node-RED JSONL mit Dateirecht 0600. PSK, IV, Schlüssel, Tokens, Nonces sowie Geräte-/Netzwerkkennungen werden entfernt. Nach der Diagnose wieder ausschalten.</p>
+    </details>
+
+    <div class="form-row hc-oauth-row"><label for="node-config-input-clientId">Client ID</label><input id="node-config-input-clientId" type="text" placeholder="aus der eigenen Developer-Portal-Application"></div>
+    <div class="form-row hc-oauth-row"><label for="node-config-input-clientSecret">Client Secret</label><input id="node-config-input-clientSecret" type="password" placeholder="niemals veröffentlichen / never share"></div>
+    <div class="form-tips hc-oauth-row"><b>Nicht aus der Home-Connect-App:</b> Client ID und Client Secret stammen aus Ihrer eigenen Application im Developer Portal (Authorization Code Grant). Secret nie in Screenshots, Foren oder Flows zeigen; bei Offenlegung sofort regenerieren.</div>
+    <input id="node-config-input-refreshToken" type="password" style="display:none">
+    <div class="form-row hc-oauth-row"><label for="node-config-input-redirectUri">Redirect URI</label><input id="node-config-input-redirectUri" type="text"></div>
+    <div class="hc-actions hc-oauth-row"><button type="button" id="hc-use-browser-address" class="red-ui-button"><i class="fa fa-magic"></i> Diese Browser-Adresse verwenden</button><button type="button" id="hc-copy-redirect" class="red-ui-button"><i class="fa fa-copy"></i> Kopieren</button> <span id="hc-copy-result"></span></div>
+    <span id="hc-redirect-check" class="hc-mini hc-oauth-row"></span>
+    <div class="form-tips hc-oauth-row">Im Developer Portal und hier <b>Zeichen für Zeichen identisch</b>: http/https, Hostname, Port und Pfad <code>/home-connect/oauth/callback</code>; kein Slash am Ende.</div>
+    <div class="form-row hc-oauth-row"><label for="node-config-input-scope">OAuth scopes</label><input id="node-config-input-scope" type="text"></div>
+    <div class="hc-actions hc-oauth-row"><button type="button" class="red-ui-button hc-scope-preset" data-scope="IdentifyAppliance">Nur Geräteliste</button><button type="button" class="red-ui-button hc-scope-preset" data-scope="IdentifyAppliance Dishwasher-Monitor Washer-Monitor Oven-Monitor">3 Geräte lesen</button><button type="button" class="red-ui-button hc-scope-preset" data-scope="IdentifyAppliance Dishwasher-Monitor Dishwasher-Control Dishwasher-Settings Washer-Monitor Washer-Control Washer-Settings Oven-Monitor Oven-Control Oven-Settings">Dashboard lesen &amp; steuern</button></div>
+    <span id="hc-scope-check" class="hc-mini hc-oauth-row"></span>
+    <div class="form-row hc-cloud-row"><label for="node-config-input-language"><i class="fa fa-language"></i> API language</label><input id="node-config-input-language" type="text" placeholder="de-DE / en-GB"></div>
+    <div class="form-row"><label for="node-config-input-requestTimeout"><i class="fa fa-clock-o"></i> Timeout (ms)</label><input id="node-config-input-requestTimeout" type="number" min="1000" step="1000"></div>
+    <div class="form-row hc-cloud-row"><label for="node-config-input-maxRequestsPerDay"><i class="fa fa-tachometer"></i> API calls/day</label><input id="node-config-input-maxRequestsPerDay" type="number" min="1" max="1000" step="1"></div>
+    <div class="form-row hc-cloud-row"><label for="node-config-input-minimumRequestInterval"><i class="fa fa-hourglass-half"></i> Min. interval (ms)</label><input id="node-config-input-minimumRequestInterval" type="number" min="100" max="60000" step="50"></div>
+    <div class="form-tips hc-cloud-row">Der Cloud-Sliding-Window-Limiter zählt jeden REST- und SSE-Verbindungsversuch. Standard: 900 Aufrufe je 24 Stunden und mindestens 250 ms Abstand. HTTP 429 aktiviert den lokalen Circuit Breaker.</div>
+    <span id="hc-rate-status" class="hc-mini hc-cloud-row"></span>
+    <div class="form-row hc-write-row"><label for="node-config-input-allowWrite"><i class="fa fa-shield"></i> <span data-i18n="home-connect.label.allowWrite"></span></label><input id="node-config-input-allowWrite" type="checkbox" style="width:auto"></div>
+    <div id="hc-runtime-status" class="hc-guide hc-warn"></div>
+    <div class="form-row hc-oauth-row"><label>&nbsp;</label><button type="button" id="hc-oauth" class="red-ui-button"><i class="fa fa-sign-in"></i> Authorize / Autorisieren</button></div>
+    <div class="form-row hc-nonlocal-row"><label>&nbsp;</label><button type="button" id="hc-test" class="red-ui-button"><i class="fa fa-check"></i> Test</button> <span id="hc-test-result"></span></div>
+    <div class="form-tips hc-cloud-row">Diese Version verwendet den vertraulichen Authorization Code Grant mit Client Secret und <b>ohne PKCE</b>. Nach „Home Connect authorized“ kann <b>Test</b> die Geräte laden. Ohne Refresh Token OAuth vollständig neu starten.</div>
+</script>
+
+<script type="text/html" data-template-name="home-connect-discover">
+    <div class="form-row"><label for="node-input-name"><i class="fa fa-tag"></i> Name</label><input id="node-input-name" type="text"></div>
+    <div class="form-row"><label for="node-input-connection"><i class="fa fa-plug"></i> Connection</label><input id="node-input-connection" type="text"></div>
+    <div class="form-row"><label for="node-input-mode">Mode</label><select id="node-input-mode"><option value="all">All appliances</option><option value="single">Single appliance</option></select></div>
+    <div class="form-row"><label for="node-input-haId">Appliance / Gerät</label><input id="node-input-haId" type="text" placeholder="optional when mode=all"></div>
+    <div class="form-row"><label>&nbsp;</label><button class="red-ui-button hc-load-devices">Load devices</button> <span class="hc-device-result"></span></div>
+</script>
+
+<script type="text/html" data-template-name="home-connect-read">
+    <div class="form-row"><label for="node-input-name"><i class="fa fa-tag"></i> Name</label><input id="node-input-name" type="text"></div>
+    <div class="form-row"><label for="node-input-connection"><i class="fa fa-plug"></i> Connection</label><input id="node-input-connection" type="text"></div>
+    <div class="form-row"><label for="node-input-operation">Operation</label><select id="node-input-operation"></select></div>
+    <div class="form-row"><label for="node-input-haId">Appliance / Gerät</label><select id="node-input-haId"></select></div>
+    <div class="form-row"><label>&nbsp;</label><button class="red-ui-button hc-load-devices">Load devices</button> <span class="hc-device-result"></span></div>
+    <div class="form-row"><label for="node-input-key">Resource key / map ID</label><input id="node-input-key" type="text"></div>
+    <div class="form-row"><label for="node-input-subKey">Nested resource ID</label><input id="node-input-subKey" type="text" placeholder="object, room or zone ID"></div>
+</script>
+
+<script type="text/html" data-template-name="home-connect-events">
+    <div class="form-row"><label for="node-input-name"><i class="fa fa-tag"></i> Name</label><input id="node-input-name" type="text"></div>
+    <div class="form-row"><label for="node-input-connection"><i class="fa fa-plug"></i> Connection</label><input id="node-input-connection" type="text"></div>
+    <div class="form-row"><label for="node-input-haId">Appliance / Gerät</label><select id="node-input-haId"><option value="*">All configured appliances / Alle konfigurierten Geräte</option></select></div>
+    <div class="form-row"><label>&nbsp;</label><button class="red-ui-button hc-load-devices">Load devices</button> <span class="hc-device-result"></span></div>
+    <div class="form-tips">The stream reconnects automatically, resumes with Last-Event-ID when available and uses exponential backoff. Prefer one all-appliance stream.</div>
+</script>
+
+<script type="text/html" data-template-name="home-connect-write">
+    <div class="form-row"><label for="node-input-name"><i class="fa fa-tag"></i> Name</label><input id="node-input-name" type="text"></div>
+    <div class="form-row"><label for="node-input-connection"><i class="fa fa-plug"></i> Connection</label><input id="node-input-connection" type="text"></div>
+    <div class="form-row"><label for="node-input-action">Allowed action</label><select id="node-input-action"><option value="from-message">From message</option><option value="start-program">Start program</option><option value="stop-program">Stop program</option><option value="select-program">Select program</option><option value="set-setting">Set setting</option><option value="command">Command</option><option value="set-active-option">Set active option</option><option value="set-selected-option">Set selected option</option></select></div>
+    <div class="form-row"><label for="node-input-haId">Appliance / Gerät</label><input id="node-input-haId" type="text"></div>
+    <div class="form-row"><label>&nbsp;</label><button class="red-ui-button hc-load-devices">Load devices</button> <span class="hc-device-result"></span></div>
+    <div class="form-row"><label for="node-input-dryRun">Dry run</label><input id="node-input-dryRun" type="checkbox" style="width:auto"></div>
+    <div class="form-row"><label for="node-input-confirmationMode">Confirmation</label><select id="node-input-confirmationMode"><option value="token">Require token</option><option value="none">None</option></select></div>
+    <div class="form-row"><label for="node-input-confirmationToken">Token</label><input id="node-input-confirmationToken" type="password" placeholder="default: CONFIRM"></div>
+    <div class="form-row"><label for="node-input-allowedApplianceTypes">Allowed types</label><input id="node-input-allowedApplianceTypes" type="text" placeholder="for example: Dishwasher,Washer,Oven"></div>
+    <div class="form-tips">Writes require global enablement and are validated against fresh capabilities, access flags, types, ranges and appliance state. The token is stored as a Node-RED credential.</div>
+</script>
+
+<script type="text/html" data-help-name="home-connect-config"><h3>Local LAN (read-only)</h3><ol><li>Mount or copy the protected Profile Downloader folder so the Node-RED server/container can read it.</li><li>Select <b>Local LAN (read-only)</b> and enter that server-side folder.</li><li>Click <b>Scan profiles / Detect devices</b>. The scanner searches subfolders and accepts a device only when its appliance JSON, <code>DeviceDescription.xml</code>, and <code>FeatureMapping.xml</code> belong together.</li><li>In every device card, enter a private/link-local Host/IP and leave <b>Auto (recommended)</b> selected.</li><li>Click <b>Test connection</b> on every card. The test immediately uses the visible Host/IP and transport, even before deploy, and performs local reads only.</li><li>Click <b>Done</b>, deploy, and then select the descriptive device label/resource in Read or one/all devices in Events. The full technical ID remains internal.</li></ol><p>The Config node updates <code>localDeviceMappings</code> on every card change and serializes all cards again on Done; users never write mapping JSON. Missing/public addresses, incomplete sets, and duplicate profile IDs are rejected clearly. Local writes are always blocked with <code>LOCAL_READ_ONLY</code>.</p><p><b>Advanced:</b> use either the profile folder or optional manually pasted profile JSON. With a folder set, the manual editor is collapsed/disabled and ignored. It can be generated from detected profiles and mappings; keys stay in the credential store and never enter Read/Events nodes.</p><p>The optional safe protocol trace records decrypted but sanitized RX/TX messages in a bounded memory buffer or a mode-0600 JSONL file. PSK, IV, keys, authentication data, nonces, and appliance/network identifiers are removed. Enable it only while diagnosing. Protocol rejections report resource, action, negotiated version, and device code; network, key/profile, transport, crypto, and heartbeat errors remain separate.</p><h3>Cloud</h3><p>Cloud configurations keep the confidential Authorization Code flow with Client Secret and no PKCE, the persistent rate limiter, OAuth refresh tokens, health/warnings, and guarded writes. Save and deploy before authorizing. The Redirect URI must match the Developer Portal exactly.</p></script>
+<script type="text/html" data-help-name="home-connect-discover"><p>Discovers real appliances dynamically. No user appliance names, IDs, programs or capabilities are hard-coded. Unsupported resources are reported in <code>discoveryErrors</code> without discarding successful data.</p></script>
+<script type="text/html" data-help-name="home-connect-read"><p>Reads a predefined resource. With a local configuration, select only a detected/configured appliance and the desired read resource; Host/IP remains exclusively in the Config node. <code>msg.haId</code>, <code>msg.operation</code> and <code>msg.key</code> can override editor fields; arbitrary URLs are not accepted.</p></script>
+<script type="text/html" data-help-name="home-connect-events"><p>Opens a local WebSocket or cloud SSE stream and reconnects automatically. Select one appliance or all configured appliances; Host/IP remains exclusively in the Config node. Output contains <code>msg.topic</code>, <code>msg.haId</code>, <code>msg.payload</code>, normalized <code>msg.health</code>, and bilingual <code>msg.warnings</code>. Stream lifecycle is also emitted as <code>CONNECTED</code>/<code>DISCONNECTED</code>.</p></script>
+<script type="text/html" data-help-name="home-connect-write"><p>Safeguarded writer for program, setting, command and active/selected option endpoints from the official <b>cloud</b> API. Local LAN connections always reject writes with <code>LOCAL_READ_ONLY</code>.</p><p>Example: <code>msg.payload={action:'start-program',haId:'...',program:'...',options:[{key:'...',value:180}],confirm:'CONFIRM'}</code>.</p></script>

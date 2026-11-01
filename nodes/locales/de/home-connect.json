@@ -1,0 +1,10 @@
+{
+  "home-connect": {
+    "label": {
+      "name": "Name",
+      "connection": "Verbindung",
+      "environment": "Umgebung",
+      "allowWrite": "Schreibzugriff erlauben"
+    }
+  }
+}

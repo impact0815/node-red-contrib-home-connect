@@ -1,0 +1,214 @@
+[
+  {
+    "id": "hc-local-tab",
+    "type": "tab",
+    "label": "04 Local LAN read-only",
+    "disabled": false,
+    "info": "Anonymized example. BEFORE DEPLOYING: open the Local Home Connect configuration, mount/select the protected Profile Downloader folder, click Scan profiles / Detect devices, enter one private Host/IP per card, leave Auto selected, and click Test connection on every card. The test immediately uses the visible Host/IP and transport; Done serializes them again for Deploy. Read selects the descriptive device label but stores the full technical ID; Events selects one or all configured devices. No local write node is included."
+  },
+  {
+    "id": "hc-local-config",
+    "type": "home-connect-config",
+    "name": "Home Connect Local – read-only",
+    "environment": "local",
+    "redirectUri": "http://localhost:1880/home-connect/oauth/callback",
+    "scope": "IdentifyAppliance",
+    "language": "de-DE",
+    "requestTimeout": 15000,
+    "maxRequestsPerDay": 900,
+    "minimumRequestInterval": 250,
+    "localProfilePath": "/data/homeconnect-profiles",
+    "allowWrite": false,
+    "localDeviceMappings": "[]"
+  },
+  {
+    "id": "hc-local-note",
+    "type": "comment",
+    "z": "hc-local-tab",
+    "name": "ZUERST ÖFFNEN: Ordner → Suchen → IP → Test → Deploy",
+    "info": "DE (einfacher Ablauf): 1. Profilordner in den Node-RED-Container nur lesend mounten. 2. Diese Config öffnen und Local LAN (read-only) wählen. 3. Ordnerpfad eintragen. 4. Profile suchen / Geräte erkennen anklicken. 5. In jeder Gerätekarte eine private IP/Host eintragen. 6. Auto (empfohlen) lassen. 7. Je Karte Verbindung testen; der Test verwendet sofort die sichtbaren Werte. 8. Fertig und Deployen; dabei wird die Zuordnung nochmals gespeichert. Danach im Read-Node die verständliche Gerätebezeichnung/Ressource und im Events-Node ein Gerät oder alle wählen. Intern bleibt die vollständige ID erhalten. Profile enthalten PSK/IV und dürfen nicht veröffentlicht werden.\n\nEN: 1. Mount the profile folder read-only inside the Node-RED container. 2. Open this config and select Local LAN (read-only). 3. Enter the folder. 4. Click Scan profiles / Detect devices. 5. Enter a private Host/IP in every card. 6. Leave Auto (recommended). 7. Test every card; the visible values are used immediately. 8. Done and Deploy serializes the mappings again. Read selects the descriptive device label/resource; Events selects one/all while the full ID stays internal. Never publish profile keys.",
+    "x": 300,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "hc-local-inject",
+    "type": "inject",
+    "z": "hc-local-tab",
+    "name": "Lokale Geräte lesen / Read local appliances",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "home-connect/local/discover",
+    "payload": "",
+    "payloadType": "date",
+    "x": 250,
+    "y": 150,
+    "wires": [
+      [
+        "hc-local-discover"
+      ]
+    ]
+  },
+  {
+    "id": "hc-local-discover",
+    "type": "home-connect-discover",
+    "z": "hc-local-tab",
+    "name": "Local discover (read-only)",
+    "connection": "hc-local-config",
+    "mode": "all",
+    "haId": "",
+    "x": 540,
+    "y": 150,
+    "wires": [
+      [
+        "hc-local-debug"
+      ],
+      [
+        "hc-local-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-local-events",
+    "type": "home-connect-events",
+    "z": "hc-local-tab",
+    "name": "Local events (all profiles)",
+    "connection": "hc-local-config",
+    "haId": "*",
+    "x": 250,
+    "y": 230,
+    "wires": [
+      [
+        "hc-local-event-debug"
+      ],
+      [
+        "hc-local-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-local-debug",
+    "type": "debug",
+    "z": "hc-local-tab",
+    "name": "Local appliance snapshots",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 800,
+    "y": 150,
+    "wires": []
+  },
+  {
+    "id": "hc-local-event-debug",
+    "type": "debug",
+    "z": "hc-local-tab",
+    "name": "Local status events",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 550,
+    "y": 230,
+    "wires": []
+  },
+  {
+    "id": "hc-local-error",
+    "type": "debug",
+    "z": "hc-local-tab",
+    "name": "Structured local error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 810,
+    "y": 250,
+    "wires": []
+  },
+  {
+    "id": "hc-local-read-inject",
+    "type": "inject",
+    "z": "hc-local-tab",
+    "name": "Read selected local snapshot",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 230,
+    "y": 310,
+    "wires": [
+      [
+        "hc-local-read"
+      ]
+    ]
+  },
+  {
+    "id": "hc-local-read",
+    "type": "home-connect-read",
+    "z": "hc-local-tab",
+    "name": "Select detected device + Snapshot",
+    "connection": "hc-local-config",
+    "operation": "snapshot",
+    "haId": "",
+    "key": "",
+    "subKey": "",
+    "x": 530,
+    "y": 310,
+    "wires": [
+      [
+        "hc-local-read-debug"
+      ],
+      [
+        "hc-local-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-local-read-debug",
+    "type": "debug",
+    "z": "hc-local-tab",
+    "name": "Selected local read",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 810,
+    "y": 310,
+    "wires": []
+  }
+]

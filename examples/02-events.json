@@ -1,0 +1,165 @@
+[
+  {
+    "id": "hc-events-flow",
+    "type": "tab",
+    "label": "Home Connect 02 – Events",
+    "disabled": false,
+    "info": "Ein gemeinsamer Event-Stream für alle Geräte. Output 2 zeigt die eigentliche Ursache eines Reconnects."
+  },
+  {
+    "id": "hc-events-note",
+    "type": "comment",
+    "z": "hc-events-flow",
+    "name": "Ein Stream für alle Geräte • Fehlerausgang immer mit Debug verbinden",
+    "info": "Production: zuerst Test/Geräteliste reparieren. Fehlen Auth oder Monitor-Scopes, zeigt der Node reconnecting. Outputs include health/warnings (home-connect-health/v1). No firmware data or undocumented endpoint is used.",
+    "x": 330,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "hc-events-config",
+    "type": "home-connect-config",
+    "name": "Home Connect – integrierter Simulator",
+    "environment": "builtin-simulator",
+    "redirectUri": "http://localhost:1880/home-connect/oauth/callback",
+    "scope": "IdentifyAppliance",
+    "language": "de-DE",
+    "allowWrite": false,
+    "requestTimeout": 15000,
+    "maxRequestsPerDay": 900,
+    "minimumRequestInterval": 250
+  },
+  {
+    "id": "hc-events-node",
+    "type": "home-connect-events",
+    "z": "hc-events-flow",
+    "name": "Events aller Geräte",
+    "connection": "hc-events-config",
+    "haId": "*",
+    "x": 170,
+    "y": 110,
+    "wires": [
+      [
+        "hc-events-type",
+        "hc-events-debug-all"
+      ],
+      [
+        "hc-events-debug-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-events-type",
+    "type": "switch",
+    "z": "hc-events-flow",
+    "name": "Eventtyp",
+    "property": "topic",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "eq",
+        "v": "STATUS",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "EVENT",
+        "vt": "str"
+      },
+      {
+        "t": "else"
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 3,
+    "x": 390,
+    "y": 100,
+    "wires": [
+      [
+        "hc-events-debug-status"
+      ],
+      [
+        "hc-events-debug-event"
+      ],
+      [
+        "hc-events-debug-other"
+      ]
+    ]
+  },
+  {
+    "id": "hc-events-debug-status",
+    "type": "debug",
+    "z": "hc-events-flow",
+    "name": "STATUS",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 620,
+    "y": 70,
+    "wires": []
+  },
+  {
+    "id": "hc-events-debug-event",
+    "type": "debug",
+    "z": "hc-events-flow",
+    "name": "EVENT",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 620,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "hc-events-debug-other",
+    "type": "debug",
+    "z": "hc-events-flow",
+    "name": "Weitere Events",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 640,
+    "y": 150,
+    "wires": []
+  },
+  {
+    "id": "hc-events-debug-all",
+    "type": "debug",
+    "z": "hc-events-flow",
+    "name": "Alle Events (optional)",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "x": 410,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "hc-events-debug-error",
+    "type": "debug",
+    "z": "hc-events-flow",
+    "name": "Reconnect-Ursache / Fehler",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "x": 430,
+    "y": 230,
+    "wires": []
+  }
+]

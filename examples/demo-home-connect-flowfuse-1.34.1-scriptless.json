@@ -1,0 +1,390 @@
+[
+  {
+    "id": "demo-hc-ff1341-fix2-dashboard-flow",
+    "type": "tab",
+    "label": "Demo Home Connect FlowFuse 1.34.1",
+    "disabled": false,
+    "info": "Demo only: deterministic simulated appliances, no credentials, real IDs, IPs, profiles or network calls.",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-comment",
+    "type": "comment",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "name": "Demo FlowFuse 1.34.1 · vollständig simuliert · skriptfreie UI-Templates",
+    "info": "Requires @flowfuse/node-red-dashboard and node-red-contrib-home-connect. Health schema: home-connect-health/v1. Device information only; no firmware endpoint is used.",
+    "x": 360,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-base",
+    "type": "ui-base",
+    "name": "Demo Home Connect FlowFuse 1.34.1",
+    "path": "/demo-home-connect-ff1341-fix2",
+    "appIcon": "",
+    "includeClientData": true,
+    "acceptsClientConfig": [
+      "ui-notification",
+      "ui-control"
+    ],
+    "showPathInSidebar": false,
+    "headerContent": "page",
+    "navigationStyle": "default",
+    "titleBarStyle": "default",
+    "showReconnectNotification": true,
+    "notificationDisplayTime": 1,
+    "showDisconnectNotification": true,
+    "allowInstall": false,
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-theme",
+    "type": "ui-theme",
+    "name": "Demo Home Connect FlowFuse 1.34.1",
+    "colors": {
+      "surface": "#ffffff",
+      "primary": "#00629B",
+      "bgPage": "#f3f6f9",
+      "groupBg": "#ffffff",
+      "groupOutline": "#d8e2eb"
+    },
+    "sizes": {
+      "density": "default",
+      "pagePadding": "12px",
+      "groupGap": "12px",
+      "groupBorderRadius": "6px",
+      "widgetGap": "12px"
+    },
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-page",
+    "type": "ui-page",
+    "name": "Demo Gerätedetails",
+    "ui": "demo-hc-ff1341-fix2-ui-base",
+    "path": "/demo-details",
+    "icon": "home",
+    "layout": "grid",
+    "theme": "demo-hc-ff1341-fix2-ui-theme",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
+    "order": 2,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-group-dw",
+    "type": "ui-group",
+    "name": "Demo Geschirrspüler",
+    "page": "demo-hc-ff1341-fix2-ui-page",
+    "width": "4",
+    "height": "1",
+    "order": 1,
+    "showTitle": false,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-group-wm",
+    "type": "ui-group",
+    "name": "Demo Waschmaschine",
+    "page": "demo-hc-ff1341-fix2-ui-page",
+    "width": "4",
+    "height": "1",
+    "order": 2,
+    "showTitle": false,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-group-ov",
+    "type": "ui-group",
+    "name": "Demo Backofen",
+    "page": "demo-hc-ff1341-fix2-ui-page",
+    "width": "4",
+    "height": "1",
+    "order": 3,
+    "showTitle": false,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-dw",
+    "type": "ui-template",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "group": "demo-hc-ff1341-fix2-group-dw",
+    "page": "",
+    "ui": "",
+    "name": "Demo Geschirrspüler",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <v-card id=\"demo-hc-dishwasher\" class=\"demo-hc-card\" elevation=\"2\">\n    <v-card-title>\n      <v-icon class=\"mr-2\">mdi-dishwasher</v-icon>{{ msg?.payload?.deviceTitle || 'Demo Geschirrspüler' }}\n      <v-spacer></v-spacer>\n      <v-chip color=\"secondary\" size=\"small\" class=\"mr-2\">{{ msg?.payload?.simulatedLabel || 'SIMULIERT' }}</v-chip>\n      <v-chip :color=\"msg?.payload?.healthColor || 'grey'\" size=\"small\">{{ msg?.payload?.healthLabel || '—' }}</v-chip>\n    </v-card-title>\n    <v-card-text>\n      <div class=\"demo-hc-device-info\">\n        <b>{{ msg?.payload?.deviceTitle || 'Demo Geschirrspüler' }}</b><br>\n        {{ msg?.payload?.brand || '—' }} · {{ msg?.payload?.typeLabel || '—' }}<br>\n        <span v-if=\"msg?.payload?.vib\">VIB/E-Nummer: {{ msg.payload.vib }}</span><br>\n        <span>{{ msg?.payload?.ui?.connection || '—' }}: {{ msg?.payload?.connectionText || '—' }}</span>\n      </div>\n      <v-alert v-if=\"msg?.payload?.warningText\" :type=\"msg?.payload?.warningType || 'info'\" density=\"compact\" variant=\"tonal\" class=\"mb-2\">\n        <b>{{ msg.payload.warningText }}</b>\n      </v-alert>\n      <div><b>{{ msg?.payload?.ui?.status || '—' }}:</b> {{ msg?.payload?.statusText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.door || '—' }}:</b> {{ msg?.payload?.doorText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.active || '—' }}:</b> {{ msg?.payload?.activeText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.selected || '—' }}:</b> {{ msg?.payload?.selectedText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.remaining || '—' }}:</b> {{ msg?.payload?.remainingText || '—' }}</div>\n      <div class=\"demo-hc-panel\">\n        <div class=\"demo-hc-panel-title\">{{ msg?.payload?.ui?.simulatedValues || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.remoteControl || '—' }}:</b> {{ msg?.payload?.remoteControlText || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.remoteStart || '—' }}:</b> {{ msg?.payload?.remoteStartText || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.localControl || '—' }}:</b> {{ msg?.payload?.localControlText || '—' }}</div>\n        <div v-if=\"msg?.payload?.options?.length\" class=\"mt-2\">\n          <b>{{ msg?.payload?.ui?.currentOptions || '—' }}:</b>\n          <div v-for=\"item in msg.payload.options\" :key=\"item.key\" class=\"demo-hc-option\">\n            <span :title=\"item.key\">{{ item.label }}</span>: {{ item.valueText }}<span v-if=\"item.unit\"> {{ item.unit }}</span>\n          </div>\n        </div>\n        <div v-if=\"msg?.payload?.programsText\" class=\"mt-2\"><b>{{ msg?.payload?.ui?.availablePrograms || '—' }}:</b> {{ msg.payload.programsText }}</div>\n      </div>\n    </v-card-text>\n    <v-card-actions>\n      <v-btn variant=\"text\" @click=\"send({payload:{action:'refresh'}})\">{{ msg?.payload?.ui?.refresh || 'Refresh' }}</v-btn>\n    </v-card-actions>\n  </v-card>\n</template>\n<style>\n.demo-hc-card{border-top:4px solid rgb(var(--v-theme-primary));height:100%;scroll-margin-top:72px}\n.demo-hc-device-info{padding:8px 0 12px;color:rgba(var(--v-theme-on-surface),.75)}\n.demo-hc-panel{margin-top:14px;padding:12px;border:1px solid rgba(var(--v-theme-on-surface),.18);border-radius:6px;background:rgba(var(--v-theme-on-surface),.035)}\n.demo-hc-panel-title{font-weight:600;margin-bottom:8px}\n.demo-hc-option{padding-left:10px}\n</style>",
+    "storeOutMessages": true,
+    "passthru": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 670,
+    "y": 260,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-data"
+      ]
+    ]
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-wm",
+    "type": "ui-template",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "group": "demo-hc-ff1341-fix2-group-wm",
+    "page": "",
+    "ui": "",
+    "name": "Demo Waschmaschine",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <v-card id=\"demo-hc-washer\" class=\"demo-hc-card\" elevation=\"2\">\n    <v-card-title>\n      <v-icon class=\"mr-2\">mdi-washing-machine</v-icon>{{ msg?.payload?.deviceTitle || 'Demo Waschmaschine' }}\n      <v-spacer></v-spacer>\n      <v-chip color=\"secondary\" size=\"small\" class=\"mr-2\">{{ msg?.payload?.simulatedLabel || 'SIMULIERT' }}</v-chip>\n      <v-chip :color=\"msg?.payload?.healthColor || 'grey'\" size=\"small\">{{ msg?.payload?.healthLabel || '—' }}</v-chip>\n    </v-card-title>\n    <v-card-text>\n      <div class=\"demo-hc-device-info\">\n        <b>{{ msg?.payload?.deviceTitle || 'Demo Waschmaschine' }}</b><br>\n        {{ msg?.payload?.brand || '—' }} · {{ msg?.payload?.typeLabel || '—' }}<br>\n        <span v-if=\"msg?.payload?.vib\">VIB/E-Nummer: {{ msg.payload.vib }}</span><br>\n        <span>{{ msg?.payload?.ui?.connection || '—' }}: {{ msg?.payload?.connectionText || '—' }}</span>\n      </div>\n      <v-alert v-if=\"msg?.payload?.warningText\" :type=\"msg?.payload?.warningType || 'info'\" density=\"compact\" variant=\"tonal\" class=\"mb-2\">\n        <b>{{ msg.payload.warningText }}</b>\n      </v-alert>\n      <div><b>{{ msg?.payload?.ui?.status || '—' }}:</b> {{ msg?.payload?.statusText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.door || '—' }}:</b> {{ msg?.payload?.doorText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.active || '—' }}:</b> {{ msg?.payload?.activeText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.selected || '—' }}:</b> {{ msg?.payload?.selectedText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.remaining || '—' }}:</b> {{ msg?.payload?.remainingText || '—' }}</div>\n      <div class=\"demo-hc-panel\">\n        <div class=\"demo-hc-panel-title\">{{ msg?.payload?.ui?.simulatedValues || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.remoteControl || '—' }}:</b> {{ msg?.payload?.remoteControlText || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.remoteStart || '—' }}:</b> {{ msg?.payload?.remoteStartText || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.localControl || '—' }}:</b> {{ msg?.payload?.localControlText || '—' }}</div>\n        <div v-if=\"msg?.payload?.options?.length\" class=\"mt-2\">\n          <b>{{ msg?.payload?.ui?.currentOptions || '—' }}:</b>\n          <div v-for=\"item in msg.payload.options\" :key=\"item.key\" class=\"demo-hc-option\">\n            <span :title=\"item.key\">{{ item.label }}</span>: {{ item.valueText }}<span v-if=\"item.unit\"> {{ item.unit }}</span>\n          </div>\n        </div>\n        <div v-if=\"msg?.payload?.programsText\" class=\"mt-2\"><b>{{ msg?.payload?.ui?.availablePrograms || '—' }}:</b> {{ msg.payload.programsText }}</div>\n      </div>\n    </v-card-text>\n    <v-card-actions>\n      <v-btn variant=\"text\" @click=\"send({payload:{action:'refresh'}})\">{{ msg?.payload?.ui?.refresh || 'Refresh' }}</v-btn>\n    </v-card-actions>\n  </v-card>\n</template>\n<style>\n.demo-hc-card{border-top:4px solid rgb(var(--v-theme-primary));height:100%;scroll-margin-top:72px}\n.demo-hc-device-info{padding:8px 0 12px;color:rgba(var(--v-theme-on-surface),.75)}\n.demo-hc-panel{margin-top:14px;padding:12px;border:1px solid rgba(var(--v-theme-on-surface),.18);border-radius:6px;background:rgba(var(--v-theme-on-surface),.035)}\n.demo-hc-panel-title{font-weight:600;margin-bottom:8px}\n.demo-hc-option{padding-left:10px}\n</style>",
+    "storeOutMessages": true,
+    "passthru": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 670,
+    "y": 380,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-data"
+      ]
+    ]
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-ov",
+    "type": "ui-template",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "group": "demo-hc-ff1341-fix2-group-ov",
+    "page": "",
+    "ui": "",
+    "name": "Demo Backofen",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <v-card id=\"demo-hc-oven\" class=\"demo-hc-card\" elevation=\"2\">\n    <v-card-title>\n      <v-icon class=\"mr-2\">mdi-stove</v-icon>{{ msg?.payload?.deviceTitle || 'Demo Backofen' }}\n      <v-spacer></v-spacer>\n      <v-chip color=\"secondary\" size=\"small\" class=\"mr-2\">{{ msg?.payload?.simulatedLabel || 'SIMULIERT' }}</v-chip>\n      <v-chip :color=\"msg?.payload?.healthColor || 'grey'\" size=\"small\">{{ msg?.payload?.healthLabel || '—' }}</v-chip>\n    </v-card-title>\n    <v-card-text>\n      <div class=\"demo-hc-device-info\">\n        <b>{{ msg?.payload?.deviceTitle || 'Demo Backofen' }}</b><br>\n        {{ msg?.payload?.brand || '—' }} · {{ msg?.payload?.typeLabel || '—' }}<br>\n        <span v-if=\"msg?.payload?.vib\">VIB/E-Nummer: {{ msg.payload.vib }}</span><br>\n        <span>{{ msg?.payload?.ui?.connection || '—' }}: {{ msg?.payload?.connectionText || '—' }}</span>\n      </div>\n      <v-alert v-if=\"msg?.payload?.warningText\" :type=\"msg?.payload?.warningType || 'info'\" density=\"compact\" variant=\"tonal\" class=\"mb-2\">\n        <b>{{ msg.payload.warningText }}</b>\n      </v-alert>\n      <div><b>{{ msg?.payload?.ui?.status || '—' }}:</b> {{ msg?.payload?.statusText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.door || '—' }}:</b> {{ msg?.payload?.doorText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.active || '—' }}:</b> {{ msg?.payload?.activeText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.selected || '—' }}:</b> {{ msg?.payload?.selectedText || '—' }}</div>\n      <div><b>{{ msg?.payload?.ui?.remaining || '—' }}:</b> {{ msg?.payload?.remainingText || '—' }}</div>\n      <div class=\"demo-hc-panel\">\n        <div class=\"demo-hc-panel-title\">{{ msg?.payload?.ui?.simulatedValues || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.remoteControl || '—' }}:</b> {{ msg?.payload?.remoteControlText || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.remoteStart || '—' }}:</b> {{ msg?.payload?.remoteStartText || '—' }}</div>\n        <div><b>{{ msg?.payload?.ui?.localControl || '—' }}:</b> {{ msg?.payload?.localControlText || '—' }}</div>\n        <div v-if=\"msg?.payload?.options?.length\" class=\"mt-2\">\n          <b>{{ msg?.payload?.ui?.currentOptions || '—' }}:</b>\n          <div v-for=\"item in msg.payload.options\" :key=\"item.key\" class=\"demo-hc-option\">\n            <span :title=\"item.key\">{{ item.label }}</span>: {{ item.valueText }}<span v-if=\"item.unit\"> {{ item.unit }}</span>\n          </div>\n        </div>\n        <div v-if=\"msg?.payload?.programsText\" class=\"mt-2\"><b>{{ msg?.payload?.ui?.availablePrograms || '—' }}:</b> {{ msg.payload.programsText }}</div>\n      </div>\n    </v-card-text>\n    <v-card-actions>\n      <v-btn variant=\"text\" @click=\"send({payload:{action:'refresh'}})\">{{ msg?.payload?.ui?.refresh || 'Refresh' }}</v-btn>\n    </v-card-actions>\n  </v-card>\n</template>\n<style>\n.demo-hc-card{border-top:4px solid rgb(var(--v-theme-primary));height:100%;scroll-margin-top:72px}\n.demo-hc-device-info{padding:8px 0 12px;color:rgba(var(--v-theme-on-surface),.75)}\n.demo-hc-panel{margin-top:14px;padding:12px;border:1px solid rgba(var(--v-theme-on-surface),.18);border-radius:6px;background:rgba(var(--v-theme-on-surface),.035)}\n.demo-hc-panel-title{font-weight:600;margin-bottom:8px}\n.demo-hc-option{padding-left:10px}\n</style>",
+    "storeOutMessages": true,
+    "passthru": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 670,
+    "y": 500,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-data"
+      ]
+    ]
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-overview-page",
+    "type": "ui-page",
+    "name": "Demo Übersicht",
+    "ui": "demo-hc-ff1341-fix2-ui-base",
+    "path": "/demo-overview",
+    "icon": "home",
+    "layout": "grid",
+    "theme": "demo-hc-ff1341-fix2-ui-theme",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
+    "order": 1,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-overview-group",
+    "type": "ui-group",
+    "name": "Demo Übersicht",
+    "page": "demo-hc-ff1341-fix2-ui-overview-page",
+    "width": "12",
+    "height": "1",
+    "order": 1,
+    "showTitle": false,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-overview",
+    "type": "ui-template",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "group": "demo-hc-ff1341-fix2-ui-overview-group",
+    "page": "",
+    "ui": "",
+    "name": "Demo Gerätekarten",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <div>\n    <div class=\"demo-hc-toolbar\">\n      <div class=\"demo-hc-heading\">{{ msg?.payload?.ui?.overview || 'Demo Übersicht' }}</div>\n      <v-select\n        :model-value=\"msg?.payload?.locale || 'de'\"\n        :items=\"msg?.payload?.languageItems || [{title:'Deutsch',value:'de'},{title:'English',value:'en'}]\"\n        item-title=\"title\" item-value=\"value\"\n        :label=\"msg?.payload?.ui?.language || 'Sprache'\"\n        density=\"compact\" hide-details class=\"demo-hc-language\"\n        @update:model-value=\"send({payload:{action:'set-language',locale:$event}})\">\n      </v-select>\n    </div>\n    <div class=\"demo-hc-grid\">\n      <v-card v-for=\"device in msg?.payload?.cards || []\" :key=\"device.key\" class=\"demo-hc-overview-card\" elevation=\"2\" :href=\"device.href\">\n        <v-card-title>\n          <v-icon class=\"mr-2\">{{ device.icon }}</v-icon>{{ device.title }}\n          <v-spacer></v-spacer>\n          <v-chip color=\"secondary\" size=\"small\" class=\"mr-2\">{{ msg?.payload?.simulatedLabel || 'SIMULIERT' }}</v-chip>\n          <v-chip :color=\"device.healthColor\" size=\"small\">{{ device.healthLabel }}</v-chip>\n        </v-card-title>\n        <v-card-text>\n          <div class=\"demo-hc-meta\">{{ device.brand }} · {{ device.typeLabel }}</div>\n          <div><b>{{ msg?.payload?.ui?.status || '—' }}:</b> {{ device.statusText }}</div>\n          <div><b>{{ msg?.payload?.ui?.program || '—' }}:</b> {{ device.activeText }}</div>\n          <div><b>{{ msg?.payload?.ui?.remaining || '—' }}:</b> {{ device.remainingText }}</div>\n          <v-alert v-if=\"device.warningText\" :type=\"device.warningType\" density=\"compact\" variant=\"tonal\" class=\"mt-2\"><b>{{ device.warningText }}</b></v-alert>\n          <div class=\"demo-hc-open\">{{ msg?.payload?.ui?.openDetails || 'Details' }} →</div>\n        </v-card-text>\n      </v-card>\n    </div>\n  </div>\n</template>\n<style>\n.demo-hc-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}\n.demo-hc-heading{font-size:1.35rem;font-weight:600}.demo-hc-language{max-width:180px}\n.demo-hc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}\n.demo-hc-overview-card{border-top:4px solid rgb(var(--v-theme-primary));transition:transform .12s}\n.demo-hc-overview-card:hover,.demo-hc-overview-card:focus{transform:translateY(-2px);outline:2px solid rgb(var(--v-theme-primary))}\n.demo-hc-meta{color:rgba(var(--v-theme-on-surface),.7);margin-bottom:8px}\n.demo-hc-open{margin-top:12px;color:rgb(var(--v-theme-primary));font-weight:600}\n</style>",
+    "storeOutMessages": true,
+    "passthru": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 930,
+    "y": 190,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-data"
+      ]
+    ]
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-nav-group",
+    "type": "ui-group",
+    "name": "Demo Navigation",
+    "page": "demo-hc-ff1341-fix2-ui-page",
+    "width": "12",
+    "height": "1",
+    "order": 0,
+    "showTitle": false,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "wires": []
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-ui-nav",
+    "type": "ui-template",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "group": "demo-hc-ff1341-fix2-ui-nav-group",
+    "page": "",
+    "ui": "",
+    "name": "Demo Zur Übersicht",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <div class=\"demo-hc-nav\">\n    <v-btn variant=\"text\" prepend-icon=\"mdi-arrow-left\" :href=\"msg?.payload?.overviewPath || '/demo-home-connect-ff1341-fix2/demo-overview'\">\n      {{ msg?.payload?.ui?.backToOverview || 'Demo Übersicht' }}\n    </v-btn>\n    <v-select\n      :model-value=\"msg?.payload?.locale || 'de'\"\n      :items=\"msg?.payload?.languageItems || [{title:'Deutsch',value:'de'},{title:'English',value:'en'}]\"\n      item-title=\"title\" item-value=\"value\"\n      :label=\"msg?.payload?.ui?.language || 'Sprache'\"\n      density=\"compact\" hide-details class=\"demo-hc-language\"\n      @update:model-value=\"send({payload:{action:'set-language',locale:$event}})\">\n    </v-select>\n  </div>\n</template>\n<style>.demo-hc-nav{display:flex;align-items:center;justify-content:space-between;gap:16px}.demo-hc-language{max-width:180px}</style>",
+    "storeOutMessages": true,
+    "passthru": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 930,
+    "y": 240,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-data"
+      ]
+    ]
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-inject",
+    "type": "inject",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "name": "Demo Daten laden",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 0.5,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 120,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-data"
+      ]
+    ]
+  },
+  {
+    "id": "demo-hc-ff1341-fix2-data",
+    "type": "function",
+    "z": "demo-hc-ff1341-fix2-dashboard-flow",
+    "name": "Demo Beispielgeräte erzeugen",
+    "func": "let locale = context.get('demoLocale') || 'de';\nconst input = msg && msg.payload && typeof msg.payload === 'object' ? msg.payload : {};\nif (input.action === 'set-language' && (input.locale === 'de' || input.locale === 'en')) {\n  locale = input.locale;\n  context.set('demoLocale', locale);\n}\nconst text = {\n  de: {\n    overview:'Demo Übersicht',language:'Sprache',connection:'Verbindung',status:'Status',door:'Tür',active:'Aktiv',selected:'Ausgewählt',remaining:'Restzeit',program:'Programm',\n    remoteControl:'Fernsteuerung',remoteStart:'Fernstart',localControl:'Lokale Bedienung',currentOptions:'Aktuelle Optionen',availablePrograms:'Verfügbare Programme',\n    simulated:'SIMULIERT',simulatedValues:'Simulierte Beispielwerte · nur Anzeige',refresh:'Aktualisieren',openDetails:'Details öffnen',backToOverview:'Zur Demo Übersicht',\n    online:'online',yes:'Ja',no:'Nein',running:'Läuft',ready:'Bereit',closed:'Geschlossen',warning:'Warnung',detergent:'Dosierbehälter fast leer.',\n    dishwasher:'Demo Geschirrspüler',washer:'Demo Waschmaschine',oven:'Demo Backofen',dishwasherType:'Geschirrspüler',washerType:'Waschmaschine',ovenType:'Backofen',\n    eco50:'Eco 50 °C',cotton:'Baumwolle',hotAir:'Heißluft',intensive70:'Intensiv 70 °C',auto:'Automatik 45–65 °C',glass40:'Glas 40 °C',quick45:'Kurz 45 °C',\n    easyCare:'Pflegeleicht',mix:'Mix',delicates:'Fein/Seide',wool:'Wolle',super15:'Super 15',topBottom:'Ober-/Unterhitze',pizza:'Pizzastufe',grill:'Umluftgrill',slowCook:'Sanftgaren',\n    progress:'Programmfortschritt',energy:'Energieprognose',water:'Wasserprognose',hygiene:'Hygiene Plus',intensiveZone:'Intensivzone',vario:'varioSpeed Plus',brilliance:'Glanztrocknen',temperature:'Temperatur',spin:'Schleuderdrehzahl',target:'Solltemperatur',fastPreheat:'Schnellaufheizen'\n  },\n  en: {\n    overview:'Demo Overview',language:'Language',connection:'Connection',status:'Status',door:'Door',active:'Active',selected:'Selected',remaining:'Remaining',program:'Program',\n    remoteControl:'Remote control',remoteStart:'Remote start',localControl:'Local control',currentOptions:'Current options',availablePrograms:'Available programs',\n    simulated:'SIMULATED',simulatedValues:'Simulated example values · display only',refresh:'Refresh',openDetails:'Open details',backToOverview:'Back to Demo Overview',\n    online:'online',yes:'Yes',no:'No',running:'Running',ready:'Ready',closed:'Closed',warning:'Warning',detergent:'Detergent dispenser nearly empty.',\n    dishwasher:'Demo Dishwasher',washer:'Demo Washer',oven:'Demo Oven',dishwasherType:'Dishwasher',washerType:'Washer',ovenType:'Oven',\n    eco50:'Eco 50 °C',cotton:'Cotton',hotAir:'Hot air',intensive70:'Intensive 70 °C',auto:'Auto 45–65 °C',glass40:'Glass 40 °C',quick45:'Quick 45 °C',\n    easyCare:'Easy-care',mix:'Mix',delicates:'Delicates/Silk',wool:'Wool',super15:'Super 15',topBottom:'Top/bottom heat',pizza:'Pizza setting',grill:'Hot-air grilling',slowCook:'Slow cook',\n    progress:'Program progress',energy:'Energy forecast',water:'Water forecast',hygiene:'Hygiene Plus',intensiveZone:'Intensive zone',vario:'varioSpeed Plus',brilliance:'Brilliance dry',temperature:'Temperature',spin:'Spin speed',target:'Target temperature',fastPreheat:'Fast preheat'\n  }\n}[locale];\nconst languageItems = [{title:'Deutsch',value:'de'},{title:'English',value:'en'}];\nconst ui = {overview:text.overview,language:text.language,connection:text.connection,status:text.status,door:text.door,active:text.active,selected:text.selected,remaining:text.remaining,program:text.program,remoteControl:text.remoteControl,remoteStart:text.remoteStart,localControl:text.localControl,currentOptions:text.currentOptions,availablePrograms:text.availablePrograms,simulatedValues:text.simulatedValues,refresh:text.refresh,openDetails:text.openDetails,backToOverview:text.backToOverview};\nconst base = '/demo-home-connect-ff1341-fix2';\nconst common = (key, applianceType, title, typeLabel, healthLabel, healthColor, statusText, activeText, selectedText, remainingText, options, programs, warningText='') => ({\n  key, applianceType, locale, languageItems, ui, simulated:true, simulatedLabel:text.simulated, deviceTitle:title, brand:'SIEMENS', typeLabel,\n  vib:'DEMO-'+key.toUpperCase()+'-2026', connectionText:text.online, healthLabel, healthColor, statusText, doorText:text.closed,\n  activeText, selectedText, remainingText, remoteControlText:text.yes, remoteStartText:key==='washer'?text.no:text.yes, localControlText:text.no,\n  options, programsText:programs.join(', '), warningText, warningType:warningText?'warning':'info', href:base+'/demo-details#demo-hc-'+key\n});\nconst opt = (key,label,valueText,unit='') => ({key,label,valueText,unit});\nconst dishwasher = common('dishwasher','Dishwasher',text.dishwasher,text.dishwasherType,text.running,'info',text.running,text.eco50,text.eco50,'62 min',[\n  opt('BSH.Common.Option.ProgramProgress',text.progress,'43','%'),opt('BSH.Common.Option.EnergyForecast',text.energy,'62','%'),opt('BSH.Common.Option.WaterForecast',text.water,'48','%'),\n  opt('Dishcare.Dishwasher.Option.HygienePlus',text.hygiene,text.yes),opt('Dishcare.Dishwasher.Option.IntensivZone',text.intensiveZone,text.no),opt('Dishcare.Dishwasher.Option.VarioSpeedPlus',text.vario,text.yes),opt('Dishcare.Dishwasher.Option.BrillianceDry',text.brilliance,text.yes)\n],[text.intensive70,text.auto,text.eco50,text.glass40,text.quick45]);\nconst washer = common('washer','Washer',text.washer,text.washerType,text.warning,'warning',text.ready,'—',text.cotton,'—',[\n  opt('LaundryCare.Washer.Option.Temperature',text.temperature,'40','°C'),opt('LaundryCare.Washer.Option.SpinSpeed',text.spin,'1400','rpm')\n],[text.cotton,text.easyCare,text.mix,text.delicates,text.wool,text.super15],text.detergent);\nconst oven = common('oven','Oven',text.oven,text.ovenType,text.running,'info',text.running,text.hotAir,text.hotAir,'28 min',[\n  opt('Cooking.Oven.Option.SetpointTemperature',text.target,'180','°C'),opt('Cooking.Oven.Option.FastPreHeat',text.fastPreheat,text.no),opt('BSH.Common.Option.ProgramProgress',text.progress,'68','%')\n],[text.hotAir,text.topBottom,text.pizza,text.grill,text.slowCook]);\nconst detail = device => ({topic:'demo-'+device.key,payload:device});\nconst overview = {topic:'demo-overview',payload:{locale,languageItems,ui,simulatedLabel:text.simulated,overviewPath:base+'/demo-overview',cards:[dishwasher,washer,oven]}};\nreturn [detail(dishwasher), detail(washer), detail(oven), overview];",
+    "outputs": 4,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 120,
+    "wires": [
+      [
+        "demo-hc-ff1341-fix2-ui-dw"
+      ],
+      [
+        "demo-hc-ff1341-fix2-ui-wm"
+      ],
+      [
+        "demo-hc-ff1341-fix2-ui-ov"
+      ],
+      [
+        "demo-hc-ff1341-fix2-ui-overview",
+        "demo-hc-ff1341-fix2-ui-nav"
+      ]
+    ]
+  }
+]

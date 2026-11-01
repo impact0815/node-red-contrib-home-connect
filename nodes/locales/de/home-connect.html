@@ -1,0 +1,19 @@
+<script type="text/html" data-help-name="home-connect-config">
+  <h3>Lokales Netz (nur lesen)</h3>
+  <ol>
+    <li>Den geschützten Profile-Downloader-Ordner so mounten/kopieren, dass der Node-RED-Server bzw. -Container ihn lesen kann.</li>
+    <li><b>Local LAN (read-only)</b> auswählen und diesen serverseitigen Ordner eintragen.</li>
+    <li><b>Profile suchen / Geräte erkennen</b> anklicken. Unterordner werden durchsucht; ein Gerät gilt erst mit zusammengehörigem Geräte-JSON, <code>DeviceDescription.xml</code> und <code>FeatureMapping.xml</code> als vollständig.</li>
+    <li>In jeder Gerätekarte eine private/link-lokale Host/IP eintragen und <b>Auto (empfohlen)</b> beibehalten.</li>
+    <li>Je Gerät <b>Verbindung testen</b> anklicken. Der Test liest ausschließlich lokale Ressourcen.</li>
+    <li><b>Fertig</b>, deployen und danach im Read-Node nur Gerät/Ressource bzw. im Events-Node ein Gerät oder alle Geräte auswählen.</li>
+  </ol>
+  <p><code>localDeviceMappings</code> wird automatisch erzeugt; niemand muss Mapping-JSON schreiben. Fehlende/öffentliche Ziele sowie unvollständige und doppelte Profile werden verständlich abgewiesen. Lokales Schreiben endet immer mit <code>LOCAL_READ_ONLY</code>.</p>
+  <p><b>Erweitert:</b> Entweder Profilordner oder optional manuell eingefügtes Profil-JSON verwenden. Bei gesetztem Ordner ist der manuelle Editor eingeklappt/deaktiviert und wird ignoriert. Das JSON kann aus erkannten Profilen und Zuordnungen erzeugt werden; Schlüssel bleiben im Credential Store.</p>
+  <h3>Cloud</h3>
+  <p>Cloud-Konfigurationen behalten den vertraulichen Authorization-Code-Flow mit Client Secret und ohne PKCE, den persistenten Rate-Limiter, Refresh Token, Health/Warnungen und abgesicherte Schreibzugriffe. Vor dem Autorisieren speichern und deployen; Redirect URI im Portal und in Node-RED exakt gleich eintragen.</p>
+</script>
+<script type="text/html" data-help-name="home-connect-discover"><p>Erkennt reale Geräte dynamisch. IDs, Namen, Programme und Fähigkeiten von Benutzergeräten sind nicht fest eingebaut. Nicht unterstützte Ressourcen erscheinen in <code>discoveryErrors</code>, ohne erfolgreiche Daten zu verwerfen.</p></script>
+<script type="text/html" data-help-name="home-connect-read"><p>Liest eine vordefinierte Ressource. Bei lokaler Konfiguration werden nur ein erkanntes/konfiguriertes Gerät und die gewünschte Lese-Ressource ausgewählt; Host/IP bleibt ausschließlich in der Config-Node. <code>msg.haId</code>, <code>msg.operation</code>, <code>msg.key</code> und <code>msg.subKey</code> können Editor-Felder überschreiben; beliebige URLs sind nicht zulässig.</p></script>
+<script type="text/html" data-help-name="home-connect-events"><p>Öffnet lokale WebSocket- oder Cloud-SSE-Events mit automatischer Wiederverbindung. Es kann ein Gerät oder alle konfigurierten Geräte gewählt werden; Host/IP bleibt ausschließlich in der Config-Node. Ausgang 1 enthält Events, Ausgang 2 strukturierte Fehler. Ausgaben enthalten <code>msg.health</code> und zweisprachige <code>msg.warnings</code>.</p></script>
+<script type="text/html" data-help-name="home-connect-write"><p>Abgesicherter Writer für Cloud-Programme, -Einstellungen, -Befehle sowie aktive/ausgewählte Optionen. Lokale Verbindungen werden immer vor Netzwerkzugriff mit <code>LOCAL_READ_ONLY</code> abgewiesen.</p></script>

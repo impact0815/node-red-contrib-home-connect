@@ -1,0 +1,29 @@
+{
+  "fixture": "dishwasher-real-enum-reference-payload",
+  "applianceType": "Dishwasher",
+  "featureMapping": "<featureMapping><features><feature refUID=\"0003\">BSH.Common.Status.OperationState</feature><feature refUID=\"0005\">BSH.Common.Status.DoorState</feature><feature refUID=\"0015\">BSH.Common.Setting.PowerState</feature><feature refUID=\"0016\">BSH.Common.Setting.Language</feature><feature refUID=\"0023\">Dishcare.Dishwasher.Status.ProgramPhase</feature><feature refUID=\"0006\">BSH.Common.Status.RemoteControlActive</feature><feature refUID=\"0007\">BSH.Common.Status.RemoteControlStartAllowed</feature><feature refUID=\"0008\">BSH.Common.Status.LocalControlActive</feature><feature refUID=\"0030\">Dishcare.Dishwasher.Event.SaltNearlyEmpty</feature><feature refUID=\"0031\">Dishcare.Dishwasher.Event.RinseAidNearlyEmpty</feature><feature refUID=\"0100\">BSH.Common.Root.ActiveProgram</feature><feature refUID=\"0101\">BSH.Common.Root.SelectedProgram</feature><feature refUID=\"2003\">Dishcare.Dishwasher.Program.Auto2</feature></features><enumerations><enumeration refENID=\"0203\" enumKey=\"BSH.Common.EnumType.OperationState\"><enumMember refValue=\"0\">BSH.Common.EnumType.OperationState.Inactive</enumMember><enumMember refValue=\"1\">BSH.Common.EnumType.OperationState.Ready</enumMember><enumMember refValue=\"3\">BSH.Common.EnumType.OperationState.Run</enumMember></enumeration><enumeration refENID=\"0204\" enumKey=\"BSH.Common.EnumType.DoorState\"><enumMember refValue=\"0\">BSH.Common.EnumType.DoorState.Closed</enumMember><enumMember refValue=\"1\">BSH.Common.EnumType.DoorState.Open</enumMember></enumeration><enumeration refENID=\"0206\" enumKey=\"BSH.Common.EnumType.PowerState\"><enumMember refValue=\"0\">BSH.Common.EnumType.PowerState.Off</enumMember><enumMember refValue=\"1\">BSH.Common.EnumType.PowerState.On</enumMember></enumeration><enumeration refENID=\"0207\" enumKey=\"BSH.Common.EnumType.Language\"><enumMember refValue=\"7\">BSH.Common.EnumType.Language.DE</enumMember></enumeration><enumeration refENID=\"0208\" enumKey=\"Dishcare.Dishwasher.EnumType.ProgramPhase\"><enumMember refValue=\"4\">Dishcare.Dishwasher.EnumType.ProgramPhase.Cleaning</enumMember></enumeration><enumeration refENID=\"0209\" enumKey=\"BSH.Common.EnumType.EventState\"><enumMember refValue=\"0\">BSH.Common.EnumType.EventState.Absent</enumMember><enumMember refValue=\"1\">BSH.Common.EnumType.EventState.Present</enumMember></enumeration></enumerations></featureMapping>",
+  "deviceDescription": "<deviceDescription><!--BSH.Common.EnumType.OperationState--><enumerationType enid=\"0203\"><!--Inactive--><enumeration value=\"0\"/><!--Ready--><enumeration value=\"1\"/><!--Run--><enumeration value=\"3\"/></enumerationType><!--BSH.Common.EnumType.DoorState--><enumerationType enid=\"0204\"><!--Closed--><enumeration value=\"0\"/><!--Open--><enumeration value=\"1\"/></enumerationType><!--BSH.Common.EnumType.ExtendedDoorState--><enumerationType enid=\"0205\" subsetOf=\"0204\"><!--Locked--><enumeration value=\"2\"/></enumerationType><status uid=\"0003\" type=\"Int\" access=\"read\"><enumerationType refENID=\"0203\"/></status><status uid=\"0005\" type=\"Int\" access=\"read\"><enumerationType refENID=\"0205\"/></status><setting uid=\"0015\" type=\"Int\" access=\"read\" enumerationType=\"0206\"/><setting uid=\"0016\" type=\"Int\" access=\"read\"><type><enumerationType refENID=\"0207\"/></type></setting><status uid=\"0023\" type=\"Int\" access=\"read\" refENID=\"0208\"/><status uid=\"0006\" type=\"Boolean\" access=\"read\"/><status uid=\"0007\" type=\"Boolean\" access=\"read\"/><status uid=\"0008\" type=\"Boolean\" access=\"read\"/><event uid=\"0030\" type=\"Int\" access=\"read\" enid=\"0209\" level=\"warning\" handling=\"none\"/><event uid=\"0031\" type=\"Int\" access=\"read\" subsetOf=\"0209\" level=\"warning\" handling=\"acknowledge\"/><option uid=\"0100\" type=\"Int\" access=\"read\"/><option uid=\"0101\" type=\"Int\" access=\"read\"/><program uid=\"2003\" access=\"read\"/></deviceDescription>",
+  "items": [
+    { "uid": 3, "value": 0 },
+    { "uid": 5, "value": 1 },
+    { "uid": 21, "value": 1 },
+    { "uid": 22, "value": 7 },
+    { "uid": 35, "value": 4 },
+    { "uid": 6, "value": 1 },
+    { "uid": 7, "value": 0 },
+    { "uid": 8, "value": 0 },
+    { "uid": 48, "value": 1 },
+    { "uid": 49, "value": 9 },
+    { "uid": 256, "value": 0 },
+    { "uid": 257, "value": 8195 }
+  ],
+  "expected": {
+    "BSH.Common.Status.OperationState": "BSH.Common.EnumType.OperationState.Inactive",
+    "BSH.Common.Status.DoorState": "BSH.Common.EnumType.DoorState.Open",
+    "BSH.Common.Setting.PowerState": "BSH.Common.EnumType.PowerState.On",
+    "BSH.Common.Setting.Language": "BSH.Common.EnumType.Language.DE",
+    "Dishcare.Dishwasher.Status.ProgramPhase": "Dishcare.Dishwasher.EnumType.ProgramPhase.Cleaning",
+    "Dishcare.Dishwasher.Event.SaltNearlyEmpty": "BSH.Common.EnumType.EventState.Present",
+    "BSH.Common.Root.SelectedProgram": "Dishcare.Dishwasher.Program.Auto2"
+  }
+}

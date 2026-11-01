@@ -1,0 +1,148 @@
+[
+  {
+    "id": "hc-list-flow",
+    "type": "tab",
+    "label": "Home Connect 01 – Geräteliste",
+    "disabled": false,
+    "info": "Einfachster Start: lokale Testgeräte automatisch erkennen. Keine Zugangsdaten erforderlich."
+  },
+  {
+    "id": "hc-list-note",
+    "type": "comment",
+    "z": "hc-list-flow",
+    "name": "1. Deployen  2. Knopf links klicken  3. Debug-Fenster öffnen",
+    "info": "Der integrierte Simulator führt keine externen Zugriffe aus. Für Production später eine eigene deployte und autorisierte Verbindung auswählen. Outputs include health/warnings (home-connect-health/v1). No firmware data or undocumented endpoint is used.",
+    "x": 310,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "hc-list-config",
+    "type": "home-connect-config",
+    "name": "Home Connect – integrierter Simulator",
+    "environment": "builtin-simulator",
+    "redirectUri": "http://localhost:1880/home-connect/oauth/callback",
+    "scope": "IdentifyAppliance",
+    "language": "de-DE",
+    "allowWrite": false,
+    "requestTimeout": 15000,
+    "maxRequestsPerDay": 900,
+    "minimumRequestInterval": 250
+  },
+  {
+    "id": "hc-list-inject",
+    "type": "inject",
+    "z": "hc-list-flow",
+    "name": "Geräteliste laden",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": 1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 100,
+    "wires": [
+      [
+        "hc-list-discover"
+      ]
+    ]
+  },
+  {
+    "id": "hc-list-discover",
+    "type": "home-connect-discover",
+    "z": "hc-list-flow",
+    "name": "Alle Geräte erkennen",
+    "connection": "hc-list-config",
+    "mode": "all",
+    "haId": "",
+    "x": 370,
+    "y": 100,
+    "wires": [
+      [
+        "hc-list-summary",
+        "hc-list-debug-raw"
+      ],
+      [
+        "hc-list-debug-error"
+      ]
+    ]
+  },
+  {
+    "id": "hc-list-summary",
+    "type": "function",
+    "z": "hc-list-flow",
+    "name": "Einfache Geräteliste",
+    "func": "msg.payload=(msg.payload||[]).map(entry=>({name:entry.appliance?.name,brand:entry.appliance?.brand,type:entry.appliance?.type,vib:entry.appliance?.vib,connected:entry.appliance?.connected,health:entry.health,warnings:entry.warnings,haId:entry.appliance?.haId}));\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 610,
+    "y": 80,
+    "wires": [
+      [
+        "hc-list-debug-simple"
+      ]
+    ]
+  },
+  {
+    "id": "hc-list-debug-simple",
+    "type": "debug",
+    "z": "hc-list-flow",
+    "name": "Geräteliste (einfach)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 870,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "hc-list-debug-raw",
+    "type": "debug",
+    "z": "hc-list-flow",
+    "name": "Vollständige Capabilities",
+    "active": false,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 630,
+    "y": 130,
+    "wires": []
+  },
+  {
+    "id": "hc-list-debug-error",
+    "type": "debug",
+    "z": "hc-list-flow",
+    "name": "Fehler",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 610,
+    "y": 180,
+    "wires": []
+  }
+]

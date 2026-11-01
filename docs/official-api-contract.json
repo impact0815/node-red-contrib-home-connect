@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 1,
+  "source": "Official Home Connect Swagger 2.0 specifications supplied with the project review",
+  "specifications": [
+    {
+      "file": "hcsdk-simulation.yaml",
+      "sha256": "5942f5ca450a46fa9a6f53ff6d13627972040f105dcd786efddcf9a44ce376a3",
+      "swagger": "2.0",
+      "host": "simulator.home-connect.com",
+      "basePath": "/api",
+      "consumes": [
+        "application/vnd.bsh.sdk.v1+json"
+      ],
+      "produces": [
+        "application/vnd.bsh.sdk.v1+json"
+      ],
+      "operations": [
+        {
+          "method": "GET",
+          "path": "/api/homeappliances",
+          "operationId": "get_home_appliances"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}",
+          "operationId": "get_specific_appliance"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs",
+          "operationId": "get_all_programs"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/available",
+          "operationId": "get_available_programs"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/available/{programkey}",
+          "operationId": "get_available_program"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/active",
+          "operationId": "get_active_program"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/active",
+          "operationId": "start_program"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/homeappliances/{haId}/programs/active",
+          "operationId": "stop_program"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/active/options",
+          "operationId": "get_active_program_options"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/active/options",
+          "operationId": "set_active_program_options"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/active/options/{optionkey}",
+          "operationId": "get_active_program_option"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/active/options/{optionkey}",
+          "operationId": "set_active_program_option"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/selected",
+          "operationId": "get_selected_program"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/selected",
+          "operationId": "set_selected_program"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/selected/options",
+          "operationId": "get_selected_program_options"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/selected/options",
+          "operationId": "set_selected_program_options"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/selected/options/{optionkey}",
+          "operationId": "get_selected_program_option"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/selected/options/{optionkey}",
+          "operationId": "set_selected_program_option"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/images",
+          "operationId": "get_images"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/images/{imagekey}",
+          "operationId": "get_image"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/settings",
+          "operationId": "get_settings"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/settings",
+          "operationId": "set_settings"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/settings/{settingkey}",
+          "operationId": "get_setting"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/settings/{settingkey}",
+          "operationId": "set_setting"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/status",
+          "operationId": "get_status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/status/{statuskey}",
+          "operationId": "get_status_value"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/events",
+          "operationId": "get_all_events"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/events",
+          "operationId": "get_events"
+        }
+      ],
+      "oauth": {
+        "type": "oauth2",
+        "flow": "accessCode",
+        "authorizationUrl": "https://simulator.home-connect.com/security/oauth/authorize",
+        "tokenUrl": "https://simulator.home-connect.com/security/oauth/token"
+      }
+    },
+    {
+      "file": "hcsdk-production.yaml",
+      "sha256": "a0704118d429eb1a7becf9d624068a2c48ce8d7c0a2250128be2487ff0758c57",
+      "swagger": "2.0",
+      "host": "api.home-connect.com",
+      "basePath": "/api",
+      "consumes": [
+        "application/vnd.bsh.sdk.v1+json"
+      ],
+      "produces": [
+        "application/vnd.bsh.sdk.v1+json"
+      ],
+      "operations": [
+        {
+          "method": "GET",
+          "path": "/api/homeappliances",
+          "operationId": "get_home_appliances"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}",
+          "operationId": "get_specific_appliance"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs",
+          "operationId": "get_all_programs"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/available",
+          "operationId": "get_available_programs"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/available/{programkey}",
+          "operationId": "get_available_program"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/active",
+          "operationId": "get_active_program"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/active",
+          "operationId": "start_program"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/homeappliances/{haId}/programs/active",
+          "operationId": "stop_program"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/active/options",
+          "operationId": "get_active_program_options"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/active/options",
+          "operationId": "set_active_program_options"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/active/options/{optionkey}",
+          "operationId": "get_active_program_option"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/active/options/{optionkey}",
+          "operationId": "set_active_program_option"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/selected",
+          "operationId": "get_selected_program"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/selected",
+          "operationId": "set_selected_program"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/selected/options",
+          "operationId": "get_selected_program_options"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/selected/options",
+          "operationId": "set_selected_program_options"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/programs/selected/options/{optionkey}",
+          "operationId": "get_selected_program_option"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/programs/selected/options/{optionkey}",
+          "operationId": "set_selected_program_option"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/images",
+          "operationId": "get_images"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/images/{imagekey}",
+          "operationId": "get_image"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/settings",
+          "operationId": "get_settings"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/settings",
+          "operationId": "set_settings"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/settings/{settingkey}",
+          "operationId": "get_setting"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/settings/{settingkey}",
+          "operationId": "set_setting"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/status",
+          "operationId": "get_status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/status/{statuskey}",
+          "operationId": "get_status_value"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/commands",
+          "operationId": "get_available_commands"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/commands",
+          "operationId": "put_commands"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/homeappliances/{haId}/commands/{commandkey}",
+          "operationId": "put_command"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/events",
+          "operationId": "get_all_events"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/events",
+          "operationId": "get_events"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps",
+          "operationId": "get_maps"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}",
+          "operationId": "get_map"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/occupancyGrid",
+          "operationId": "get_map_occupancy_grid"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/layout",
+          "operationId": "get_map_layout"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/cleaningStatus",
+          "operationId": "get_map_cleaning_status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/cleaningStatus/objects",
+          "operationId": "get_map_detected_objects"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/cleaningStatus/objects/{objectId}",
+          "operationId": "get_map_detected_object"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/rooms",
+          "operationId": "get_map_rooms"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/rooms/{roomId}",
+          "operationId": "get_map_room"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/zones",
+          "operationId": "get_map_zones"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/maps/{mapId}/zones/{zoneId}",
+          "operationId": "get_map_zone"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/robot/position",
+          "operationId": "get_map_robot_position"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/config/restrictions",
+          "operationId": "get_map_config_restrictions"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/cleaningSummary",
+          "operationId": "get_map_cleaning_summaries"
+        },
+        {
+          "method": "GET",
+          "path": "/api/homeappliances/{haId}/map/cleaningSummary/{counter}",
+          "operationId": "get_map_cleaning_summary"
+        }
+      ],
+      "oauth": {
+        "type": "oauth2",
+        "flow": "accessCode",
+        "authorizationUrl": "https://api.home-connect.com/security/oauth/authorize",
+        "tokenUrl": "https://api.home-connect.com/security/oauth/token"
+      }
+    }
+  ]
+}
