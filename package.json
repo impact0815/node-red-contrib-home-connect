@@ -1,5 +1,5 @@
 {
-  "name": "node-red-contrib-home-connect",
+  "name": "@impact0815/node-red-contrib-home-connect",
   "version": "0.2.0",
   "description": "Node-RED nodes for read-only local Home Connect WebSockets and the official cloud API with OAuth, rate-limit protection, health and guarded writes.",
   "keywords": [
