@@ -6,7 +6,7 @@ Local profile PSKs and IVs are equivalent to device credentials. Prefer a server
 
 The local transport rejects public network targets and is hard read-only. Do not weaken these controls. If a profile is exposed, remove the copy, obtain a fresh profile where the appliance/account supports it, and review LAN access.
 
-The optional local protocol trace is disabled by default. It records decrypted protocol messages only after recursive redaction and never records PSK, IV, derived keys, ciphertext, OAuth data, authentication nonces, appliance IDs, serial numbers, MAC addresses, SSIDs, or IP fields. A configured JSONL trace file is created with mode `0600`; without a path, entries remain in a bounded memory buffer. Treat even sanitized traces as private operational data, inspect them before sharing, and disable/delete them after diagnosis.
+The optional local protocol trace is disabled by default. It records decrypted protocol messages only after recursive redaction and never records PSK, IV, derived keys, ciphertext, OAuth data, authentication nonces, appliance IDs, serial numbers, MAC addresses, SSIDs, or IP fields. On POSIX, a configured JSONL trace file is created and enforced with mode `0600`; Windows does not expose equivalent POSIX mode bits reliably, so protect the trace path with an account-restricted NTFS ACL. Without a path, entries remain in a bounded memory buffer. Treat even sanitized traces as private operational data, inspect them before sharing, and disable/delete them after diagnosis.
 
 ## Supported version
 

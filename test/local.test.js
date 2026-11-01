@@ -1052,7 +1052,11 @@ test('safe local protocol trace redacts secrets and writes protected JSONL when 
   assert.equal(snapshot.entries[0].message.iv64, '[REDACTED]');
   assert.equal(snapshot.entries[0].message.deviceID, '[REDACTED_IDENTIFIER]');
   assert.equal(snapshot.entries[0].message.data, '[REDACTED_AUTHENTICATION_DATA]');
-  assert.equal(fs.statSync(filename).mode & 0o777, 0o600);
+  const traceStat = fs.statSync(filename);
+  assert.equal(traceStat.isFile(), true);
+  if (process.platform !== 'win32') {
+    assert.equal(traceStat.mode & 0o777, 0o600);
+  }
 });
 
 test('success code 200 is accepted and EHOSTUNREACH remains a network error with bilingual hints', () => {

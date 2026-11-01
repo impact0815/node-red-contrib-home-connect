@@ -25,6 +25,7 @@ Version 0.2.0 is feature-frozen for publication as build `hc-0.2.0-final`.
 
 ### Fixed
 
+- Made the protected JSONL trace regression test platform-aware: POSIX continues to require the enforced `0600` mode, while Windows verifies file creation and secret redaction without asserting permission bits that Windows cannot represent reliably. The trace implementation still creates/appends with mode `0600` and explicitly applies `0600` on POSIX-capable filesystems.
 - Corrected real-profile enum handling for digit-only hexadecimal IDs, comment-named `enumerationType` tables, inherited enum subsets, profile booleans, program UIDs, and unknown members.
 - Corrected local WebSocket upgrade headers and `/homeconnect` path handling, AES/TLS profile validation, legacy authentication fallback, `/ci/services` versioning, `deviceReady`, keepalive handling, and success-code interpretation.
 - Prevented optional local-read failures from discarding appliance-pushed or previously successful values.

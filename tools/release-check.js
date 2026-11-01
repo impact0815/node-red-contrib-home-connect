@@ -94,8 +94,9 @@ const frozenR8 = {
   'lib/local-profile.js': '6af32a8fc7b1ce45c6d14a021ce0529dd008615b0811e575a88b9bc2bd654f19',
   'lib/local-crypto.js': 'd8e0e7b818f36035025f7b1c49419e096e1ac26583731a99d7c9ecafb8ffafcc',
   'lib/local-diagnostics.js': '6877951021fb4e98437d3bd18775de4de90fdfa444fba51ae3370319f93e483f',
+  'lib/local-trace.js': 'deb58d758d4003b40474580e865cf4d335e474c16865e345c761bfd10faba7d7',
   'lib/websocket-transport.js': '9f9fcbff1dccc5097b8a6d4f0f5f40643eff0ed3452312f2e45d14c95f46faf2',
-  'test/local.test.js': 'e7acc2b0b9dbf6e80c2a696e101285bd64ed072c01911b8f1e2e4f5cbd7e8008'
+  'test/local.test.js': 'b7a2137e63f5b9e671b98215cfc66498b4d17799b86089e3a78f56934110b8a6'
 };
 for (const [name, expected] of Object.entries(frozenR8)) {
   const file = path.join(root, name);
