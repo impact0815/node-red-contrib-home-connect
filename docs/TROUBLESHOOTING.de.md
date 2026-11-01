@@ -9,7 +9,7 @@ Diese Anleitung beginnt beim sichtbaren Symptom. Zugangsdaten, Hostnamen, Gerät
 1. Läuft wirklich der erwartete Build?
    ```bash
    cd ~/.node-red
-   node -p "require('./node_modules/node-red-contrib-home-connect/BUILD-INFO.json')"
+   node -p "require('./node_modules/@impact0815/node-red-contrib-home-connect/BUILD-INFO.json')"
    ```
    Erwartet: Version `0.2.0`, Build `hc-0.2.0-final`, `pkce: false`.
 2. Ist die richtige Connection ausgewählt und eindeutig benannt?
@@ -96,10 +96,10 @@ Ein Flow-Deploy lädt keinen neuen Node.js-Runtime-Code. Zusätzlich zur npm-Ver
 
 ```bash
 cd ~/.node-red
-npm uninstall node-red-contrib-home-connect
-rm -rf node_modules/node-red-contrib-home-connect
-npm install --force /absoluter/pfad/node-red-contrib-home-connect-0.2.0.tgz
-node -p "require('./node_modules/node-red-contrib-home-connect/BUILD-INFO.json')"
+npm uninstall @impact0815/node-red-contrib-home-connect
+rm -rf node_modules/@impact0815/node-red-contrib-home-connect
+npm install --force /absoluter/pfad/impact0815-node-red-contrib-home-connect-0.2.0.tgz
+node -p "require('./node_modules/@impact0815/node-red-contrib-home-connect/BUILD-INFO.json')"
 ```
 
 Danach Node-RED/Container vollständig neu starten, Browser hart neu laden und OAuth neu beginnen. Authorization Codes und State-Links sind kurzlebig/einmalig und dürfen nicht wiederverwendet werden.

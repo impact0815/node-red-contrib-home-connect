@@ -11,7 +11,7 @@
     "type": "comment",
     "z": "hc-dashboard-flow",
     "name": "Dashboard 2.0 · DE/EN lokalisiert · Cloud + Local read-only · Built-in simulator",
-    "info": "Requires @flowfuse/node-red-dashboard and node-red-contrib-home-connect. Health schema: home-connect-health/v1. Device information only; no firmware endpoint is used.",
+    "info": "Requires @flowfuse/node-red-dashboard and @impact0815/node-red-contrib-home-connect. Health schema: home-connect-health/v1. Device information only; no firmware endpoint is used.",
     "x": 360,
     "y": 40,
     "wires": []

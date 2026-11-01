@@ -1,4 +1,4 @@
-# node-red-contrib-home-connect
+# @impact0815/node-red-contrib-home-connect
 
 **[English](README.md) · Deutsch**
 
@@ -45,42 +45,60 @@ Node-RED-Nodes für Home Connect: direkte, nur lesende LAN-Anbindung über Gerä
 
 ## Installation
 
-### Lokale TGZ-Datei
+### Empfohlen: Node-RED-Palette
+
+Nachdem das Paket auf npm veröffentlicht wurde:
+
+1. In Node-RED **Menü → Palette verwalten → Installieren** öffnen.
+2. Nach `@impact0815/node-red-contrib-home-connect` suchen.
+3. **Installieren** anklicken und die Erfolgsmeldung abwarten.
+4. Node-RED vollständig neu starten und den Browser mit **Strg+F5** neu laden.
+
+### Kommandozeile
 
 ```bash
 cd ~/.node-red
-npm install /absoluter/pfad/node-red-contrib-home-connect-0.2.0.tgz
+npm install @impact0815/node-red-contrib-home-connect@0.2.0
 ```
 
-Danach Node-RED vollständig neu starten und den Browser mit **Strg+F5** neu laden.
+### Lokale TGZ-Datei
+
+Die mitgelieferte Release-Datei kann direkt installiert werden, zum Beispiel vor der Aufnahme in die Palette:
+
+```bash
+cd ~/.node-red
+npm install /absoluter/pfad/impact0815-node-red-contrib-home-connect-0.2.0.tgz
+```
 
 ### Docker-Beispiel
 
 ```bash
-docker cp node-red-contrib-home-connect-0.2.0.tgz node-red:/tmp/
-docker exec node-red npm install --prefix /data /tmp/node-red-contrib-home-connect-0.2.0.tgz
+docker exec node-red npm install --prefix /data @impact0815/node-red-contrib-home-connect@0.2.0
 docker restart node-red
 ```
 
-### Upgrade von 0.1.0
+Für die mitgelieferte TGZ-Datei diese zuerst in den Container kopieren:
 
-Das alte Paket sauber austauschen, damit Node-RED keine veraltete Kopie lädt:
+```bash
+docker cp impact0815-node-red-contrib-home-connect-0.2.0.tgz node-red:/tmp/
+docker exec node-red npm install --prefix /data /tmp/impact0815-node-red-contrib-home-connect-0.2.0.tgz
+docker restart node-red
+```
+
+Installierten Build prüfen:
 
 ```bash
 cd ~/.node-red
-npm uninstall node-red-contrib-home-connect
-rm -rf node_modules/node-red-contrib-home-connect
-npm install --force /absoluter/pfad/node-red-contrib-home-connect-0.2.0.tgz
-node -p "require('./node_modules/node-red-contrib-home-connect/BUILD-INFO.json')"
+node -p "require('./node_modules/@impact0815/node-red-contrib-home-connect/BUILD-INFO.json')"
 ```
 
-Erwartet werden `hc-0.2.0-final` und `pkce: false`. Bei Docker anschließend den Container neu starten. Bestehende Cloud-Konfiguration bleibt kompatibel; unvollständige oder alte Autorisierungs-Links/Codes nicht weiterverwenden.
+Erwartet werden `0.2.0`, `hc-0.2.0-final` und `pkce: false`. Unvollständige oder alte Autorisierungs-Links/Codes nicht weiterverwenden.
 
 ## Schritt für Schritt: Einrichtung für Einsteiger
 
 ### A. Erst ohne Konto ausprobieren
 
-1. In Node-RED **Menü → Import → Beispiele → node-red-contrib-home-connect → 01-first-steps-device-list** wählen.
+1. In Node-RED **Menü → Import → Beispiele → @impact0815/node-red-contrib-home-connect → 01-first-steps-device-list** wählen.
 2. Deployen.
 3. Links am Inject-Node auf den Knopf klicken.
 4. Im Debug-Fenster erscheinen die drei ausschließlich lokalen Testgeräte.
@@ -203,7 +221,7 @@ Jeder Funktions-Node hat zwei Ausgänge: **Daten/Ergebnis/Event** und **struktur
 
 ## Beispiel-Flows
 
-Unter **Import → Beispiele → node-red-contrib-home-connect**:
+Unter **Import → Beispiele → @impact0815/node-red-contrib-home-connect**. Einsteigerfreundliche Anleitungen stehen in der [deutschen Examples-README](examples/README.de.md) und der [englischen Examples-README](examples/README.md).
 
 | Datei | Inhalt |
 |---|---|

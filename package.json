@@ -1,21 +1,25 @@
 {
   "name": "@impact0815/node-red-contrib-home-connect",
   "version": "0.2.0",
-  "description": "Node-RED nodes for read-only local Home Connect WebSockets and the official cloud API with OAuth, rate-limit protection, health and guarded writes.",
+  "description": "Node-RED nodes for Home Connect: OAuth authorization, automatic appliance discovery, events, reading and safeguarded writing via the official cloud API, plus experimental read-only local LAN access.",
   "keywords": [
     "node-red",
     "home-connect",
+    "home-automation",
+    "iot",
+    "smart-home",
+    "appliances",
+    "oauth2",
+    "websocket",
+    "server-sent-events",
     "bosch",
     "siemens",
     "neff",
-    "gaggenau",
-    "appliance",
-    "oauth2",
-    "sse"
+    "gaggenau"
   ],
   "license": "MIT",
   "author": "impact0815",
-  "homepage": "https://github.com/impact0815/node-red-contrib-home-connect#readme",
+  "homepage": "https://www.npmjs.com/package/@impact0815/node-red-contrib-home-connect",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/impact0815/node-red-contrib-home-connect.git"
@@ -24,7 +28,8 @@
     "url": "https://github.com/impact0815/node-red-contrib-home-connect/issues"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "main": "nodes/home-connect.js",
   "homeConnectBuild": {

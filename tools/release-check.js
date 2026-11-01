@@ -83,7 +83,20 @@ function inspectPng(file) {
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const build = JSON.parse(fs.readFileSync(path.join(root, 'BUILD-INFO.json'), 'utf8'));
-if (pkg.name !== 'node-red-contrib-home-connect') failures.push('package.json: unexpected package name');
+const expectedPackageName = '@impact0815/node-red-contrib-home-connect';
+const expectedDescription = 'Node-RED nodes for Home Connect: OAuth authorization, automatic appliance discovery, events, reading and safeguarded writing via the official cloud API, plus experimental read-only local LAN access.';
+const expectedHomepage = 'https://www.npmjs.com/package/@impact0815/node-red-contrib-home-connect';
+const requiredKeywords = ["node-red", "home-connect", "home-automation", "iot", "smart-home", "appliances", "oauth2", "websocket", "server-sent-events", "bosch", "siemens", "neff", "gaggenau"];
+if (pkg.name !== expectedPackageName || build.packageName !== expectedPackageName) failures.push('package/build metadata: unexpected scoped package name');
+if (pkg.description !== expectedDescription) failures.push('package.json: description differs from GitHub About description');
+if (pkg.homepage !== expectedHomepage) failures.push('package.json: homepage must be the scoped npm package page');
+if (pkg.repository?.url !== 'git+https://github.com/impact0815/node-red-contrib-home-connect.git') failures.push('package.json: repository metadata missing');
+if (pkg.bugs?.url !== 'https://github.com/impact0815/node-red-contrib-home-connect/issues') failures.push('package.json: bugs metadata missing');
+if (pkg.publishConfig?.access !== 'public' || pkg.publishConfig?.registry !== 'https://registry.npmjs.org/') failures.push('package.json: scoped package must publish publicly to the npm registry');
+for (const keyword of requiredKeywords) if (!pkg.keywords?.includes(keyword)) failures.push(`package.json: missing keyword ${keyword}`);
+const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
+if (lock.name !== expectedPackageName || lock.packages?.['']?.name !== expectedPackageName) failures.push('package-lock.json: unexpected scoped package name');
+for (const required of ['examples/README.md', 'examples/README.de.md']) if (!fs.existsSync(path.join(root, required))) failures.push(`${required}: missing`);
 if (pkg.version !== '0.2.0' || build.packageVersion !== '0.2.0') failures.push('release version must be 0.2.0');
 if (pkg.homeConnectBuild?.buildId !== 'hc-0.2.0-final' || build.buildId !== 'hc-0.2.0-final') failures.push('build ID must be hc-0.2.0-final');
 if (pkg.homeConnectBuild?.releaseStatus !== 'final' || build.releaseStatus !== 'final') failures.push('release status must be final');
@@ -106,7 +119,7 @@ for (const [name, expected] of Object.entries(frozenR8)) {
 const isolatedDemo = path.join(root, 'examples/demo-home-connect-flowfuse-1.34.1-scriptless.json');
 if (!fs.existsSync(isolatedDemo)) failures.push('isolated FlowFuse Demo is missing');
 else {
-  if (sha256(isolatedDemo) !== '77ace9bbcf1742334f412274abfb0ce59c55a3b5a390f2f9ac44cbed19c51fe3') {
+  if (sha256(isolatedDemo) !== '4521db3cc81fa49a8f1b6a503ffc7ed65bfe5875497b43b128d8e17415edecbb') {
     failures.push('isolated FlowFuse Demo differs from the user-provided file');
   }
   const flow = JSON.parse(fs.readFileSync(isolatedDemo, 'utf8'));
@@ -129,6 +142,7 @@ for (const [name, expected] of Object.entries(frozenScreenshots)) {
 }
 
 const forbiddenExtensions = new Set(['.pem', '.key', '.p12', '.pfx', '.ovpn']);
+const neverPublicVersion = ['0', '1', '0'].join('.');
 const allFiles = walk(root);
 for (const file of allFiles) {
   const name = rel(file);
@@ -138,6 +152,7 @@ for (const file of allFiles) {
   if (/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(content)) failures.push(`${name}: email address found`);
   if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(content)) failures.push(`${name}: private key found`);
   if (/\b(?:ghp|github_pat|npm)_[A-Za-z0-9_\-]{20,}\b/.test(content)) failures.push(`${name}: repository/registry token found`);
+  if (content.includes(neverPublicVersion)) failures.push(`${name}: reference to never-public prior version found`);
   const privateIps = content.match(/\b(?:10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})\b/g) || [];
   if (privateIps.length && name !== 'test/local.test.js') {
     failures.push(`${name}: numeric private address found outside the synthetic validation fixtures`);

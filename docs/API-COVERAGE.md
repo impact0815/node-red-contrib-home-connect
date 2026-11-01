@@ -1,6 +1,6 @@
 # Official API contract and coverage
 
-The cloud client in version 0.2.0 remains checked against the two official Swagger 2.0 files supplied for the 0.1.0 revision:
+The cloud client in version 0.2.0 is checked against the two supplied official Swagger 2.0 files:
 
 | Specification | SHA-256 | Host | Operations |
 | --- | --- | --- | ---: |

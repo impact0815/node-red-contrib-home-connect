@@ -1,4 +1,4 @@
-node-red-contrib-home-connect
+@impact0815/node-red-contrib-home-connect
 
 Independent, unofficial community software for the public Home Connect API and an experimental, undocumented local appliance protocol.
 Inspired at a conceptual level by the discovery-first and safeguarded-write approach of:

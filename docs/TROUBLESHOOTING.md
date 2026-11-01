@@ -9,7 +9,7 @@ Start with the visible symptom. Never include credentials, hostnames, appliance 
 1. Is the expected build installed?
    ```bash
    cd ~/.node-red
-   node -p "require('./node_modules/node-red-contrib-home-connect/BUILD-INFO.json')"
+   node -p "require('./node_modules/@impact0815/node-red-contrib-home-connect/BUILD-INFO.json')"
    ```
    Expect version `0.2.0`, build `hc-0.2.0-final`, and `pkce: false`.
 2. Is the correct connection selected and clearly named?
@@ -96,10 +96,10 @@ A flow deploy does not reload Node.js runtime code. Use BUILD-INFO in addition t
 
 ```bash
 cd ~/.node-red
-npm uninstall node-red-contrib-home-connect
-rm -rf node_modules/node-red-contrib-home-connect
-npm install --force /absolute/path/node-red-contrib-home-connect-0.2.0.tgz
-node -p "require('./node_modules/node-red-contrib-home-connect/BUILD-INFO.json')"
+npm uninstall @impact0815/node-red-contrib-home-connect
+rm -rf node_modules/@impact0815/node-red-contrib-home-connect
+npm install --force /absolute/path/impact0815-node-red-contrib-home-connect-0.2.0.tgz
+node -p "require('./node_modules/@impact0815/node-red-contrib-home-connect/BUILD-INFO.json')"
 ```
 
 Then restart Node-RED or the container completely, hard-reload the browser, and begin OAuth again. Authorization codes and state links are short-lived and single-use.

@@ -1,5 +1,5 @@
 {
-  "packageName": "node-red-contrib-home-connect",
+  "packageName": "@impact0815/node-red-contrib-home-connect",
   "packageVersion": "0.2.0",
   "buildId": "hc-0.2.0-final",
   "oauthFlow": "authorization_code_client_secret",

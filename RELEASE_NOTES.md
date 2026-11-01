@@ -1,4 +1,4 @@
-# node-red-contrib-home-connect 0.2.0
+# @impact0815/node-red-contrib-home-connect 0.2.0
 
 Version 0.2.0 adds experimental, hard-read-only local Home Connect access alongside the official cloud API, plus German/English Dashboard 2.0 localization.
 

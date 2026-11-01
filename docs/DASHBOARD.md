@@ -2,7 +2,7 @@
 
 ## Import
 
-1. Install `node-red-contrib-home-connect` and `@flowfuse/node-red-dashboard`.
+1. Install `@impact0815/node-red-contrib-home-connect` and `@flowfuse/node-red-dashboard`.
 2. In Node-RED choose **Import → Clipboard** and load `examples/dashboard-dishwasher-washer-oven.json`.
 3. Deploy.
 4. Open `/dashboard/overview`; the exact prefix follows the Dashboard configuration.

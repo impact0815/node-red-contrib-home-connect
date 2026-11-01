@@ -46,7 +46,3 @@ Version 0.2.0 is feature-frozen for publication as build `hc-0.2.0-final`.
 - Dashboard examples tested for `@flowfuse/node-red-dashboard` 1.34.1.
 - OAuth remains Authorization Code Grant with client secret and without PKCE.
 - Runtime dependencies remain zero.
-
-## 0.1.0
-
-- Initial release with official-cloud OAuth, discovery, finite read coverage, SSE, rate-limit protection, normalized health/warnings, guarded writes, simulator flows, bilingual documentation, CI, and package validation.

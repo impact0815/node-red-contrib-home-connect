@@ -1,69 +1,78 @@
 # Release procedure for 0.2.0
 
-The feature set is frozen at build `hc-0.2.0-final`. Do not add features after this point; only release-blocking corrections are allowed, followed by the complete validation sequence.
+The feature set is frozen at build `hc-0.2.0-final`. Only release-blocking corrections are allowed, followed by the complete validation sequence.
 
-## Required release inputs
+## Package identity
 
-- `docs/images/dashboard-overview-en.png`
-- `docs/images/dashboard-details-en.png`
-- `examples/demo-home-connect-flowfuse-1.34.1-scriptless.json`
+- npm package: `@impact0815/node-red-contrib-home-connect`
+- version: `0.2.0`
+- GitHub repository: `impact0815/node-red-contrib-home-connect`
+- npm homepage: `https://www.npmjs.com/package/@impact0815/node-red-contrib-home-connect`
+- npm TGZ filename: `impact0815-node-red-contrib-home-connect-0.2.0.tgz`
 
-The screenshots must come from the isolated simulated Demo and must be visually reviewed for browser/account context, hostnames, addresses, real appliance IDs, tokens, QR codes, profiles, unrelated tabs, and notifications.
-
-## Final local checks
+## Required local checks
 
 ```bash
 npm ci --ignore-scripts
 npm run release:check
 npm run validate
 npm pack --json
-sha256sum node-red-contrib-home-connect-0.2.0.tgz
+sha256sum impact0815-node-red-contrib-home-connect-0.2.0.tgz
+tar -tzf impact0815-node-red-contrib-home-connect-0.2.0.tgz | sort
+npm publish --dry-run ./impact0815-node-red-contrib-home-connect-0.2.0.tgz --access public --registry https://registry.npmjs.org/
 ```
 
-Inspect the exact package payload:
+The screenshots in `docs/images/` must remain the reviewed simulated images. The examples and package payload must not contain credentials, account data, real appliance identifiers, or private network data.
+
+## Existing GitHub repository: normal additional commit
+
+Follow [GITHUB-UPDATE.md](GITHUB-UPDATE.md). In summary:
 
 ```bash
-tar -tzf node-red-contrib-home-connect-0.2.0.tgz | sort
-npm publish --dry-run ./node-red-contrib-home-connect-0.2.0.tgz --access public
+git switch main
+git pull --ff-only origin main
+npm ci --ignore-scripts
+npm run release:check
+npm run validate
+git add -A
+git diff --cached --check
+git commit -m "Use scoped npm package and finalize 0.2.0"
+git push origin main
 ```
 
-## First GitHub publication
+Do not force-push. Wait until GitHub Actions CI succeeds on `main`.
 
-Create `impact0815/node-red-contrib-home-connect` as an empty public repository, without generated README, license, or `.gitignore`, then run:
+## Tag and GitHub Release
 
-```bash
-git init -b main
-git add .
-git status --short
-git commit -m "Release node-red-contrib-home-connect 0.2.0"
-git remote add origin https://github.com/impact0815/node-red-contrib-home-connect.git
-git push -u origin main
-```
-
-After GitHub Actions CI succeeds on `main`:
+Confirm that `v0.2.0` does not already exist. Then:
 
 ```bash
-git tag -a v0.2.0 -m "node-red-contrib-home-connect 0.2.0"
+git tag -a v0.2.0 -m "@impact0815/node-red-contrib-home-connect v0.2.0"
 git push origin v0.2.0
+
+ARTIFACT_DIR="/absolute/path/to/release-files"
 gh release create v0.2.0 \
-  ./node-red-contrib-home-connect-0.2.0.tgz \
-  ./SHA256SUMS.txt \
-  --title "node-red-contrib-home-connect 0.2.0" \
-  --notes-file RELEASE_NOTES.md
+  "$ARTIFACT_DIR/impact0815-node-red-contrib-home-connect-0.2.0-source.zip" \
+  "$ARTIFACT_DIR/impact0815-node-red-contrib-home-connect-0.2.0.tgz" \
+  "$ARTIFACT_DIR/SHA256SUMS.txt" \
+  --repo impact0815/node-red-contrib-home-connect \
+  --verify-tag \
+  --title "@impact0815/node-red-contrib-home-connect 0.2.0" \
+  --notes-file ./RELEASE_NOTES.md
 ```
 
 ## npm publication
 
-Confirm the account and package name before publishing:
-
 ```bash
-npm whoami
-npm view node-red-contrib-home-connect versions --json
-npm publish ./node-red-contrib-home-connect-0.2.0.tgz --access public
-npm view node-red-contrib-home-connect@0.2.0 version dist.integrity dist.tarball
+ARTIFACT_DIR="/absolute/path/to/release-files"
+npm config get registry
+npm whoami --registry https://registry.npmjs.org/
+npm view @impact0815/node-red-contrib-home-connect versions --json --registry https://registry.npmjs.org/ || true
+npm publish "$ARTIFACT_DIR/impact0815-node-red-contrib-home-connect-0.2.0.tgz" --access public --registry https://registry.npmjs.org/
+npm view @impact0815/node-red-contrib-home-connect@0.2.0 name version dist.integrity dist.tarball --registry https://registry.npmjs.org/
 ```
 
-If the unscoped npm name is not controlled by the publisher, stop. Do not silently rename or publish under a different scope; update package metadata, documentation, lockfile, and release plan as one reviewed change.
+If npm requires two-factor authentication, complete its prompt or add a current one-time password with `--otp=<code>`. Never put an npm token or OTP into the repository.
 
 ## Post-publication smoke test
 
@@ -71,8 +80,12 @@ If the unscoped npm name is not controlled by the publisher, stop. Do not silent
 TMPDIR="$(mktemp -d)"
 cd "$TMPDIR"
 npm init -y
-npm install node-red-contrib-home-connect@0.2.0
-node -p "require('node-red-contrib-home-connect/BUILD-INFO.json')"
+npm install @impact0815/node-red-contrib-home-connect@0.2.0
+node -p "require('@impact0815/node-red-contrib-home-connect/BUILD-INFO.json')"
 ```
 
-The build ID must be `hc-0.2.0-final`.
+The package name must be `@impact0815/node-red-contrib-home-connect`, the version `0.2.0`, and the build ID `hc-0.2.0-final`.
+
+## Node-RED Flow Library
+
+After npm publication, sign in at `https://flows.nodered.org/add/node`, enter the exact package name `@impact0815/node-red-contrib-home-connect`, and submit it. The package must already be public on npm and must retain the `node-red` keyword, README, license, and `node-red.nodes` metadata.
