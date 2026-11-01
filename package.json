@@ -1,6 +1,6 @@
 {
   "name": "@impact0815/node-red-contrib-home-connect",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Node-RED nodes for Home Connect: OAuth authorization, automatic appliance discovery, events, reading and safeguarded writing via the official cloud API, plus experimental read-only local LAN access.",
   "keywords": [
     "node-red",
