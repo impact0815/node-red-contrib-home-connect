@@ -214,12 +214,12 @@ test('OAuth routes run confidential Authorization Code flow without PKCE and sto
   const callback = nodeRoutes.find(route => route.path === '/home-connect/oauth/callback').handlers.at(-1);
   const diagnosticsResponse = response();
   await diagnostics({}, diagnosticsResponse);
-  assert.equal(diagnosticsResponse.jsonBody.packageVersion, '0.2.0');
-  assert.equal(diagnosticsResponse.jsonBody.buildId, 'hc-0.2.0-final');
+  assert.equal(diagnosticsResponse.jsonBody.packageVersion, '0.2.1');
+  assert.equal(diagnosticsResponse.jsonBody.buildId, 'hc-0.2.1-final');
   assert.equal(diagnosticsResponse.jsonBody.oauth.pkce, false);
   assert.equal(diagnosticsResponse.jsonBody.oauth.flow, 'authorization_code_client_secret');
   assert.match(diagnosticsResponse.jsonBody.loadedFrom, /nodes$/);
-  assert.equal(diagnosticsResponse.headers['x-home-connect-build'], 'hc-0.2.0-final');
+  assert.equal(diagnosticsResponse.headers['x-home-connect-build'], 'hc-0.2.1-final');
   const statusResponse = response();
   await status({ params: { id: config.id } }, statusResponse);
   assert.equal(statusResponse.jsonBody.ok, true);
@@ -244,13 +244,13 @@ test('OAuth routes run confidential Authorization Code flow without PKCE and sto
   assert.equal(authorizationUrl.searchParams.has('code_challenge_method'), false);
   assert.ok(authorizationUrl.searchParams.get('state'));
   assert.equal(startResponse.headers['cache-control'], 'no-store');
-  assert.equal(startResponse.headers['x-home-connect-build'], 'hc-0.2.0-final');
+  assert.equal(startResponse.headers['x-home-connect-build'], 'hc-0.2.1-final');
 
   const callbackResponse = response();
   await callback({ query: { state: authorizationUrl.searchParams.get('state'), code: 'authorization-code' } }, callbackResponse);
   assert.equal(callbackResponse.statusCode, 200);
   assert.match(callbackResponse.body, /refresh token was stored/i);
-  assert.match(callbackResponse.body, /hc-0\.2\.0-final/);
+  assert.match(callbackResponse.body, /hc-0\.2\.1-final/);
   assert.equal(tokenCalls.length, 1);
   const tokenBody = new URLSearchParams(tokenCalls[0].options.body);
   assert.equal(tokenBody.get('grant_type'), 'authorization_code');
@@ -295,7 +295,7 @@ test('OAuth routes run confidential Authorization Code flow without PKCE and sto
   assert.equal(tokenErrorResponse.statusCode, 401);
   assert.match(tokenErrorResponse.body, /unauthorized_client/);
   assert.match(tokenErrorResponse.body, /Client authentication failed/);
-  assert.match(tokenErrorResponse.body, /hc-0\.2\.0-final/);
+  assert.match(tokenErrorResponse.body, /hc-0\.2\.1-final/);
   assert.doesNotMatch(tokenErrorResponse.body, /client-secret|failed-code/);
 
   const untrustedErrorResponse = response();

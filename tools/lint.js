@@ -30,7 +30,7 @@ for (const file of files.filter(file => /\.(js|json|md|html)$/.test(file))) {
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json')));
 if (!pkg['node-red']?.nodes?.['home-connect']) failures.push('package.json: Node-RED node entry missing');
 if (!pkg.engines?.node || !pkg.engines?.['node-red']) failures.push('package.json: engine requirements missing');
-if (pkg.version !== '0.2.0') failures.push('package.json: expected release version 0.2.0');
+if (pkg.version !== '0.2.1') failures.push('package.json: expected release version 0.2.1');
 if (pkg.name !== '@impact0815/node-red-contrib-home-connect') failures.push('package.json: expected scoped npm package name');
 if (pkg.description !== "Node-RED nodes for Home Connect: OAuth authorization, automatic appliance discovery, events, reading and safeguarded writing via the official cloud API, plus experimental read-only local LAN access.") failures.push('package.json: GitHub About description mismatch');
 if (pkg.homepage !== "https://www.npmjs.com/package/@impact0815/node-red-contrib-home-connect") failures.push('package.json: npm homepage mismatch');

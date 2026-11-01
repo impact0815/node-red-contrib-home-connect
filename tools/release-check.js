@@ -97,8 +97,8 @@ for (const keyword of requiredKeywords) if (!pkg.keywords?.includes(keyword)) fa
 const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
 if (lock.name !== expectedPackageName || lock.packages?.['']?.name !== expectedPackageName) failures.push('package-lock.json: unexpected scoped package name');
 for (const required of ['examples/README.md', 'examples/README.de.md']) if (!fs.existsSync(path.join(root, required))) failures.push(`${required}: missing`);
-if (pkg.version !== '0.2.0' || build.packageVersion !== '0.2.0') failures.push('release version must be 0.2.0');
-if (pkg.homeConnectBuild?.buildId !== 'hc-0.2.0-final' || build.buildId !== 'hc-0.2.0-final') failures.push('build ID must be hc-0.2.0-final');
+if (pkg.version !== '0.2.1' || build.packageVersion !== '0.2.1') failures.push('release version must be 0.2.1');
+if (pkg.homeConnectBuild?.buildId !== 'hc-0.2.1-final' || build.buildId !== 'hc-0.2.1-final') failures.push('build ID must be hc-0.2.1-final');
 if (pkg.homeConnectBuild?.releaseStatus !== 'final' || build.releaseStatus !== 'final') failures.push('release status must be final');
 if (pkg.homeConnectBuild?.featureFreeze !== '2026-11-01' || build.featureFreeze !== '2026-11-01') failures.push('feature freeze must be 2026-11-01');
 

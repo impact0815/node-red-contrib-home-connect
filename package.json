@@ -33,7 +33,7 @@
   },
   "main": "nodes/home-connect.js",
   "homeConnectBuild": {
-    "buildId": "hc-0.2.0-final",
+    "buildId": "hc-0.2.1-final",
     "oauthFlow": "authorization_code_client_secret",
     "pkce": false,
     "dashboardLocales": [

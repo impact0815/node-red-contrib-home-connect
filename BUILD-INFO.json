@@ -1,7 +1,7 @@
 {
   "packageName": "@impact0815/node-red-contrib-home-connect",
-  "packageVersion": "0.2.0",
-  "buildId": "hc-0.2.0-final",
+  "packageVersion": "0.2.1",
+  "buildId": "hc-0.2.1-final",
   "oauthFlow": "authorization_code_client_secret",
   "pkce": false,
   "localTransport": "read-only",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-11-01
+
+- Published as scoped npm package `@impact0815/node-red-contrib-home-connect`.
+- No functional changes compared to 0.2.0.
+
 ## 0.2.0 - 2026-11-01
 
 Version 0.2.0 is feature-frozen for publication as build `hc-0.2.0-final`.
